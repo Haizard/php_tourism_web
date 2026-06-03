@@ -1,0 +1,7 @@
+<section class="px-6 py-12 lg:px-8">
+    <div class="mx-auto grid max-w-7xl gap-6 md:grid-cols-3">
+        <x-tour-card />
+        <x-tour-card />
+        <x-tour-card />
+    </div>
+</section>
