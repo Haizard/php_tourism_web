@@ -1,0 +1,1 @@
+- [Spatie settings empty-DB save bug](spatie-settings-empty-db.md) — settings cannot be saved when the DB has no rows; must seed all groups first.
