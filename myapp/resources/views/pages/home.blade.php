@@ -1,4 +1,4 @@
-<x-layouts.app title="Tourism Starter Kit">
+<x-layouts.app :title="$generalSettings->siteName ?? 'Tourism Starter Kit'" :description="$generalSettings->tagline ?? 'A multilingual, admin-ready foundation for travel agencies, tour operators, and destination brands.'">
     @include('sections.hero')
     @include('sections.featured-tours')
     @include('sections.destinations')
