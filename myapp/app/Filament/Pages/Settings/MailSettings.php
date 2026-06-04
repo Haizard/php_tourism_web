@@ -3,7 +3,7 @@
 namespace App\Filament\Pages\Settings;
 
 use App\Settings\MailSettings as MailSettingsModel;
-use Filament\Forms\Components\Card;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 
@@ -19,10 +19,10 @@ class MailSettings extends SettingsPage
         return MailSettingsModel::class;
     }
 
-    protected function getFormSchema(): array
+    protected function getSettingsFormSchema(): array
     {
         return [
-            Card::make()->schema([
+            Section::make('Email Configuration')->schema([
                 TextInput::make('adminNotificationEmail')
                     ->label('Support email')
                     ->email()

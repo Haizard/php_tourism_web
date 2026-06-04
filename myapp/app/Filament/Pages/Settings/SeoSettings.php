@@ -3,7 +3,7 @@
 namespace App\Filament\Pages\Settings;
 
 use App\Settings\SeoSettings as SeoSettingsModel;
-use Filament\Forms\Components\Card;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 
@@ -19,10 +19,10 @@ class SeoSettings extends SettingsPage
         return SeoSettingsModel::class;
     }
 
-    protected function getFormSchema(): array
+    protected function getSettingsFormSchema(): array
     {
         return [
-            Card::make()->schema([
+            Section::make('Search Engine Optimization')->schema([
                 TextInput::make('defaultMetaTitle')
                     ->label('Default meta title')
                     ->required(),

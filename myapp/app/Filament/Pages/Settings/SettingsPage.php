@@ -4,6 +4,8 @@ namespace App\Filament\Pages\Settings;
 
 use Filament\Actions\Action;
 use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Pages\Concerns\InteractsWithFormActions;
 use Filament\Pages\Concerns\HasUnsavedDataChangesAlert;
 use Filament\Pages\Page;
@@ -22,6 +24,8 @@ abstract class SettingsPage extends Page implements Forms\Contracts\HasForms
     protected static ?string $navigationGroup = 'Settings';
 
     protected static bool $shouldRegisterNavigation = true;
+
+    public array $data = [];
 
     protected function getFormActions(): array
     {
@@ -44,12 +48,24 @@ abstract class SettingsPage extends Page implements Forms\Contracts\HasForms
         $this->form->fill($this->settings->toArray());
     }
 
+    public function form(Form $form): Form
+    {
+        return $form
+            ->schema($this->getSettingsFormSchema())
+            ->statePath('data');
+    }
+
     public function save(): void
     {
         $this->getSettingsInstance()->fill($this->form->getState())->save();
 
-        $this->notify('success', 'Settings saved successfully.');
+        Notification::make()
+            ->title('Settings saved successfully.')
+            ->success()
+            ->send();
     }
 
     abstract protected static function getSettingsClass(): string;
+
+    abstract protected function getSettingsFormSchema(): array;
 }

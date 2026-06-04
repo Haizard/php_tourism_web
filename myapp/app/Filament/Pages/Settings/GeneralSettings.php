@@ -3,8 +3,8 @@
 namespace App\Filament\Pages\Settings;
 
 use App\Settings\GeneralSettings as GeneralSettingsModel;
-use Filament\Forms\Components\Card;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 
 class GeneralSettings extends SettingsPage
@@ -19,10 +19,10 @@ class GeneralSettings extends SettingsPage
         return GeneralSettingsModel::class;
     }
 
-    protected function getFormSchema(): array
+    protected function getSettingsFormSchema(): array
     {
         return [
-            Card::make()->schema([
+            Section::make('Site Identity')->schema([
                 TextInput::make('siteName')
                     ->label('Site name')
                     ->required(),
@@ -36,7 +36,7 @@ class GeneralSettings extends SettingsPage
                     ->label('Favicon URL')
                     ->url(),
             ]),
-            Card::make()->schema([
+            Section::make('Contact Details')->schema([
                 TextInput::make('contactEmail')
                     ->label('Contact email')
                     ->email()
@@ -48,7 +48,7 @@ class GeneralSettings extends SettingsPage
                     ->label('Address')
                     ->required(),
             ]),
-            Card::make()->schema([
+            Section::make('Social Links')->schema([
                 Repeater::make('socialLinks')
                     ->label('Social links')
                     ->schema([
@@ -61,7 +61,7 @@ class GeneralSettings extends SettingsPage
                             ->required(),
                     ])
                     ->columnSpan('full')
-                    ->createItemButtonLabel('Add link'),
+                    ->addActionLabel('Add link'),
             ]),
         ];
     }

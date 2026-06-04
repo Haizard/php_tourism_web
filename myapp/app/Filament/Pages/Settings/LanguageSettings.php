@@ -3,8 +3,8 @@
 namespace App\Filament\Pages\Settings;
 
 use App\Settings\LanguageSettings as LanguageSettingsModel;
-use Filament\Forms\Components\Card;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 
 class LanguageSettings extends SettingsPage
@@ -19,10 +19,10 @@ class LanguageSettings extends SettingsPage
         return LanguageSettingsModel::class;
     }
 
-    protected function getFormSchema(): array
+    protected function getSettingsFormSchema(): array
     {
         return [
-            Card::make()->schema([
+            Section::make('Locale Configuration')->schema([
                 Select::make('defaultLocale')
                     ->label('Default locale')
                     ->options($this->getLocaleOptions())

@@ -3,8 +3,8 @@
 namespace App\Filament\Pages\Settings;
 
 use App\Settings\ThemeSettings as ThemeSettingsModel;
-use Filament\Forms\Components\Card;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 
 class ThemeSettings extends SettingsPage
@@ -19,10 +19,10 @@ class ThemeSettings extends SettingsPage
         return ThemeSettingsModel::class;
     }
 
-    protected function getFormSchema(): array
+    protected function getSettingsFormSchema(): array
     {
         return [
-            Card::make()->schema([
+            Section::make('Appearance')->schema([
                 ColorPicker::make('primaryColor')
                     ->label('Primary color')
                     ->required(),
