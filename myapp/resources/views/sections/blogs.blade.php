@@ -1,4 +1,15 @@
-<section class="px-6 py-12 lg:px-8">
+@php
+    $__bgType  = $sectionSettings->blogs_bg_type  ?? 'color';
+    $__bgColor = $sectionSettings->blogs_bg_color ?? '#f1f5f9';
+    $__bgImage = $sectionSettings->blogs_bg_image ?? '';
+    $__style = '';
+    if ($__bgType === 'color') {
+        $__style = 'background-color: ' . $__bgColor . ';';
+    } elseif ($__bgType === 'image' && $__bgImage) {
+        $__style = 'background-image: url(' . asset('storage/' . $__bgImage) . '); background-size: cover; background-position: center; background-repeat: no-repeat;';
+    }
+@endphp
+<section class="px-6 py-12 lg:px-8" style="{{ $__style }}">
     <div class="mx-auto max-w-7xl">
         <div class="page-section-header">
             <span class="badge-pill bg-[var(--color-accent)]/10 text-[var(--color-accent)]">Journal</span>
@@ -12,7 +23,7 @@
                 <div class="p-6">
                     <p class="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--color-accent)]">Travel insight</p>
                     <h3 class="mt-3 text-2xl font-black text-slate-950">Inside Ngorongoro</h3>
-                    <p class="mt-4 text-sm leading-6 text-slate-600">A deeper look at what makes this crater one of East Africa’s most captivating safari destinations.</p>
+                    <p class="mt-4 text-sm leading-6 text-slate-600">A deeper look at what makes this crater one of East Africa's most captivating safari destinations.</p>
                 </div>
             </article>
             <article class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white/90 shadow-lg shadow-slate-900/5">

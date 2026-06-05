@@ -1,5 +1,17 @@
-<section class="page-hero page-hero--hero1 relative overflow-hidden">
-    <div class="page-hero__image absolute inset-0"></div>
+@php
+    $heroBgType  = $sectionSettings->hero_bg_type  ?? 'none';
+    $heroBgImage = $sectionSettings->hero_bg_image  ?? '';
+    $heroBgColor = $sectionSettings->hero_bg_color  ?? '#0f172a';
+    $heroImageStyle = '';
+    $heroSectionExtra = '';
+    if ($heroBgType === 'image' && $heroBgImage) {
+        $heroImageStyle = 'background-image: url(' . asset('storage/' . $heroBgImage) . '); background-size: cover; background-position: center;';
+    } elseif ($heroBgType === 'color') {
+        $heroSectionExtra = 'background-color: ' . $heroBgColor . ';';
+    }
+@endphp
+<section class="page-hero page-hero--hero1 relative overflow-hidden" style="{{ $heroSectionExtra }}">
+    <div class="page-hero__image absolute inset-0" style="{{ $heroImageStyle }}"></div>
     <div class="page-hero__overlay absolute inset-0 bg-slate-950/75"></div>
     <div class="relative mx-auto max-w-7xl px-6 py-20 lg:px-8">
         <div class="grid gap-10 lg:grid-cols-[1.12fr_0.88fr] lg:items-center">
@@ -8,7 +20,7 @@
                     Ticket Plan
                 </span>
                 <h1 class="mt-8 text-5xl font-black tracking-tight text-white sm:text-6xl lg:text-7xl">Explore Beautiful World With Us</h1>
-                <p class="mt-6 max-w-xl text-lg leading-8 text-slate-100/90">“Let us take the hassle out of travel planning, so you can focus on the adventure ahead.”</p>
+                <p class="mt-6 max-w-xl text-lg leading-8 text-slate-100/90">"Let us take the hassle out of travel planning, so you can focus on the adventure ahead."</p>
                 <div class="mt-10 flex flex-wrap gap-4">
                     <a href="{{ url("/{$currentLocale}/tours") }}" class="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-accent)] to-[var(--color-primary)] px-7 py-3 text-sm font-semibold text-white shadow-2xl shadow-[rgba(140,92,246,0.28)] transition hover:-translate-y-0.5">
                         Discover Now

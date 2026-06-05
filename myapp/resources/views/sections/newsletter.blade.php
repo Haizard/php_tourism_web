@@ -1,4 +1,15 @@
-<section class="px-6 py-12 lg:px-8">
+@php
+    $__bgType  = $sectionSettings->newsletter_bg_type  ?? 'color';
+    $__bgColor = $sectionSettings->newsletter_bg_color ?? '#f8fafc';
+    $__bgImage = $sectionSettings->newsletter_bg_image ?? '';
+    $__style = '';
+    if ($__bgType === 'color') {
+        $__style = 'background-color: ' . $__bgColor . ';';
+    } elseif ($__bgType === 'image' && $__bgImage) {
+        $__style = 'background-image: url(' . asset('storage/' . $__bgImage) . '); background-size: cover; background-position: center; background-repeat: no-repeat;';
+    }
+@endphp
+<section class="px-6 py-12 lg:px-8" style="{{ $__style }}">
     <div class="mx-auto max-w-7xl">
         <x-glass-card class="grid gap-8 lg:grid-cols-[1.5fr_1fr] items-center">
             <div>
