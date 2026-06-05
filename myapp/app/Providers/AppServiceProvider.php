@@ -12,6 +12,7 @@ use App\Settings\SeoSettings;
 use App\Settings\ThemeSettings;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use App\Models\DetailTemplate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -55,6 +56,14 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Exception $e) {
         }
 
+        $tourTemplate = null;
+        $blogTemplate = null;
+        try {
+            $tourTemplate = DetailTemplate::where('page_type', 'tour_detail')->first();
+            $blogTemplate = DetailTemplate::where('page_type', 'blog_detail')->first();
+        } catch (\Exception $e) {
+        }
+
         View::share(compact(
             'generalSettings',
             'themeSettings',
@@ -62,7 +71,9 @@ class AppServiceProvider extends ServiceProvider
             'languageSettings',
             'mailSettings',
             'sectionSettings',
-            'navbarItems'
+            'navbarItems',
+            'tourTemplate',
+            'blogTemplate'
         ));
     }
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\CustomPageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TourController;
 use App\Settings\LanguageSettings;
@@ -53,6 +54,11 @@ Route::prefix('{locale}')
         Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
         Route::view('/privacy', 'pages.privacy')->name('privacy');
         Route::view('/terms', 'pages.terms')->name('terms');
+
+        // Custom pages — must be LAST to avoid catching named routes above
+        Route::get('/{slug}', [CustomPageController::class, 'show'])
+            ->name('custom-page.show')
+            ->where('slug', '[a-z0-9\-]+');
     });
 
 Route::get('/dashboard', function () {
