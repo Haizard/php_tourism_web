@@ -8,20 +8,24 @@ use App\Http\Controllers\TourController;
 use App\Settings\LanguageSettings;
 use Illuminate\Support\Facades\Route;
 
-$languageSettings = app(LanguageSettings::class);
 $supportedLocales = array_keys(config('tourism.supported_locales', []));
-$enabledLocales = array_values(array_filter(
-    $languageSettings->enabledLocales ?: $supportedLocales,
-    fn ($locale) => in_array($locale, $supportedLocales, true)
-));
+try {
+    $languageSettings = app(LanguageSettings::class);
+    $enabledLocales = array_values(array_filter(
+        $languageSettings->enabledLocales ?: $supportedLocales,
+        fn ($locale) => in_array($locale, $supportedLocales, true)
+    ));
+    $defaultLocale = in_array($languageSettings->defaultLocale, $enabledLocales, true)
+        ? $languageSettings->defaultLocale
+        : ($enabledLocales[0] ?? 'en');
+} catch (\Exception $e) {
+    $enabledLocales = $supportedLocales;
+    $defaultLocale = $supportedLocales[0] ?? 'en';
+}
 
 if (empty($enabledLocales)) {
     $enabledLocales = $supportedLocales;
 }
-
-$defaultLocale = in_array($languageSettings->defaultLocale, $enabledLocales, true)
-    ? $languageSettings->defaultLocale
-    : ($enabledLocales[0] ?? 'en');
 
 Route::get('/', function () use ($defaultLocale) {
     return redirect('/'.$defaultLocale);
