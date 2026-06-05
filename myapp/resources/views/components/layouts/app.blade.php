@@ -40,6 +40,10 @@
             @include('partials.footer')
         </div>
 
-        {{-- Future AI chatbot integration point. --}}
+        {{-- Booking modal (global — triggered by Alpine open-booking-modal event) --}}
+        <x-booking-modal />
+
+        {{-- AI Chatbot Widget --}}
+        <x-chatbot-widget />
     </body>
 </html>

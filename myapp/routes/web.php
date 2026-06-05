@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TourController;
@@ -30,6 +31,9 @@ if (empty($enabledLocales)) {
 Route::get('/', function () use ($defaultLocale) {
     return redirect('/'.$defaultLocale);
 });
+
+// Chatbot — locale-independent endpoint
+Route::post('/chatbot', [ChatbotController::class, 'chat'])->name('chatbot.chat');
 
 Route::prefix('{locale}')
     ->whereIn('locale', $enabledLocales)

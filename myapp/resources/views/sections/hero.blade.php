@@ -25,9 +25,12 @@
                     <a href="{{ url("/{$currentLocale}/tours") }}" class="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-accent)] to-[var(--color-primary)] px-7 py-3 text-sm font-semibold text-white shadow-2xl shadow-[rgba(140,92,246,0.28)] transition hover:-translate-y-0.5">
                         Discover Now
                     </a>
-                    <a href="{{ url("/{$currentLocale}/contact") }}" class="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-7 py-3 text-sm font-semibold text-white transition hover:bg-white/20">
+                    <button
+                        onclick="window.dispatchEvent(new CustomEvent('open-booking-modal', { detail: { tourId: null, tourTitle: 'Plan Your Trip', tourPrice: 0 } }))"
+                        class="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-7 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
+                    >
                         Book a Trip
-                    </a>
+                    </button>
                 </div>
             </div>
 
