@@ -5,6 +5,7 @@ namespace App\Filament\Pages\Settings;
 use App\Settings\ThemeSettings as ThemeSettingsModel;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 
 class ThemeSettings extends SettingsPage
@@ -44,6 +45,16 @@ class ThemeSettings extends SettingsPage
                     ->maxValue(1)
                     ->required(),
             ]),
+
+            Section::make('Custom CSS')
+                ->description('Inject additional CSS that applies to every page on the public site. Changes here override the default styles.')
+                ->schema([
+                    Textarea::make('customCss')
+                        ->label('Custom CSS')
+                        ->rows(12)
+                        ->placeholder("/* Example: change the button radius */\n.navbar-pill { border-radius: 8px; }\n\n/* Change hero font size */\n.page-hero h1 { font-size: 4rem; }")
+                        ->helperText('Plain CSS only — no <style> tags needed.'),
+                ]),
         ];
     }
 }

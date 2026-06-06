@@ -26,6 +26,11 @@
                 --hero-overlay-opacity: {{ $themeSettings->heroOverlayOpacity }};
             }
         </style>
+        @if (!empty($themeSettings->customCss))
+        <style id="custom-css">
+            {{ $themeSettings->customCss }}
+        </style>
+        @endif
         <x-seo :title="$title ?? $generalSettings->siteName" :description="$description ?? $generalSettings->tagline" />
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
