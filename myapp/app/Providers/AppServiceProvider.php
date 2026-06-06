@@ -7,6 +7,7 @@ use App\Models\Tour;
 use App\Settings\GeneralSettings;
 use App\Settings\LanguageSettings;
 use App\Settings\MailSettings;
+use App\Settings\HomePageSettings;
 use App\Settings\SectionSettings;
 use App\Settings\SeoSettings;
 use App\Settings\ThemeSettings;
@@ -30,7 +31,8 @@ class AppServiceProvider extends ServiceProvider
         $seoSettings      = $this->tryLoad(SeoSettings::class);
         $languageSettings = $this->tryLoad(LanguageSettings::class);
         $mailSettings     = $this->tryLoad(MailSettings::class);
-        $sectionSettings  = $this->tryLoad(SectionSettings::class);
+        $sectionSettings   = $this->tryLoad(SectionSettings::class);
+        $homePageSettings  = $this->tryLoad(HomePageSettings::class);
 
         $navbarItems = collect();
         try {
@@ -71,6 +73,7 @@ class AppServiceProvider extends ServiceProvider
             'languageSettings',
             'mailSettings',
             'sectionSettings',
+            'homePageSettings',
             'navbarItems',
             'tourTemplate',
             'blogTemplate'

@@ -5,6 +5,9 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/* Hide Alpine x-cloak elements until Alpine.js initialises */
+[x-cloak] { display: none !important; }
+
 @theme {
     --font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';

@@ -1,12 +1,10 @@
 {{--
     Global Booking Modal
     Triggered via: window.dispatchEvent(new CustomEvent('open-booking-modal', { detail: { tourId, tourTitle, tourPrice } }))
-    When tourId is null, shows a tour selector pulled from the DB.
 --}}
 @php
     $locale      = $currentLocale ?? app()->getLocale();
-    $baseUrl     = url('/' . $locale . '/tours');
-    $bookingBase = url('/' . $locale . '/bookings');
+    $tourBase    = url('/' . $locale . '/tours');
 
     try {
         $availableTours = \App\Models\Tour::where('is_published', true)
@@ -23,6 +21,7 @@
         open: false,
         loading: false,
         success: false,
+        error: '',
         tourId: null,
         tourTitle: '',
         tourPrice: 0,
@@ -33,18 +32,19 @@
         },
         get formAction() {
             const id = this.tourId ?? this.selectedTourId;
-            return id ? '{{ $bookingBase }}/' + id : '#';
+            return id ? '{{ $tourBase }}/' + id + '/book' : null;
         },
         init() {
             window.addEventListener('open-booking-modal', (e) => {
-                this.tourId       = e.detail.tourId    ?? null;
-                this.tourTitle    = e.detail.tourTitle ?? 'Plan Your Trip';
-                this.tourPrice    = parseFloat(e.detail.tourPrice ?? 0);
+                this.tourId         = e.detail.tourId    ?? null;
+                this.tourTitle      = e.detail.tourTitle ?? 'Plan Your Trip';
+                this.tourPrice      = parseFloat(e.detail.tourPrice ?? 0);
                 this.selectedTourId = this.tourId;
-                this.travelers    = 1;
-                this.success      = false;
-                this.loading      = false;
-                this.open         = true;
+                this.travelers      = 1;
+                this.success        = false;
+                this.loading        = false;
+                this.error          = '';
+                this.open           = true;
                 this.$nextTick(() => this.$refs.nameInput?.focus());
             });
         },
@@ -53,7 +53,42 @@
             this.selectedTourId = opt.value || null;
             this.tourPrice      = parseFloat(opt.dataset.price ?? 0);
         },
-        close() { this.open = false; }
+        close() {
+            this.open    = false;
+            this.loading = false;
+            this.success = false;
+            this.error   = '';
+        },
+        async submitBooking(formEl) {
+            const id = this.tourId ?? this.selectedTourId;
+            if (!id) return;
+
+            this.loading = true;
+            this.error   = '';
+
+            try {
+                const fd  = new FormData(formEl);
+                const url = '{{ $tourBase }}/' + id + '/book';
+
+                const res = await fetch(url, {
+                    method:  'POST',
+                    body:    fd,
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                });
+
+                const json = await res.json();
+
+                if (res.ok && json.success) {
+                    this.success = true;
+                } else {
+                    this.error = json.message ?? 'Something went wrong. Please try again.';
+                }
+            } catch (e) {
+                this.error = 'Network error. Please check your connection and try again.';
+            } finally {
+                this.loading = false;
+            }
+        }
     }"
     x-show="open"
     x-cloak
@@ -90,13 +125,12 @@
                     <p class="text-xs font-semibold uppercase tracking-widest text-white/70">Book Your Adventure</p>
                     <h2 class="mt-1 text-xl font-bold text-white" x-text="tourTitle"></h2>
                 </div>
-                <button @click="close()" class="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30">
+                <button @click="close()" class="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30" aria-label="Close">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
-            {{-- Price preview --}}
             <div x-show="total > 0" class="mt-4 flex items-center gap-3 rounded-xl bg-white/10 px-4 py-3 backdrop-blur-sm">
                 <svg class="h-5 w-5 text-white/80" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -127,40 +161,36 @@
         <form
             x-show="!success"
             method="POST"
-            :action="formAction"
-            @submit.prevent="
-                if (!selectedTourId && !tourId) { return; }
-                loading = true;
-                $el.submit();
-            "
+            @submit.prevent="submitBooking($el)"
             class="max-h-[70vh] overflow-y-auto p-6 space-y-4"
         >
             @csrf
 
-            {{-- Tour selector — shown when modal is opened without a specific tour --}}
+            {{-- Error message --}}
+            <div x-show="error" class="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700" x-text="error"></div>
+
+            {{-- Tour selector --}}
             @if($availableTours->isNotEmpty())
                 <div x-show="!tourId">
                     <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Select a Tour *</label>
                     <select
                         name="_selected_tour"
                         @change="handleTourChange($el)"
-                        required
                         x-bind:required="!tourId"
                         class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-950 focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20 transition"
                     >
                         <option value="">— Choose a tour —</option>
                         @foreach($availableTours as $t)
-                            <option
-                                value="{{ $t->id }}"
-                                data-price="{{ $t->discount_price ?? $t->price }}"
-                            >{{ $t->title }}{{ $t->price ? ' — $' . number_format($t->discount_price ?? $t->price, 0) . '/person' : '' }}</option>
+                            <option value="{{ $t->id }}" data-price="{{ $t->discount_price ?? $t->price }}">
+                                {{ $t->title }}{{ $t->price ? ' — $' . number_format($t->discount_price ?? $t->price, 0) . '/person' : '' }}
+                            </option>
                         @endforeach
                     </select>
-                    <p class="mt-1 text-xs text-slate-400">Or <a href="{{ $baseUrl }}" class="underline text-[var(--color-accent)]">browse all tours</a> to see full details before booking.</p>
+                    <p class="mt-1 text-xs text-slate-400">Or <a href="{{ url('/' . $locale . '/tours') }}" class="underline text-[var(--color-accent)]">browse all tours</a> to see full details before booking.</p>
                 </div>
             @else
                 <div x-show="!tourId" class="rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-700">
-                    Please <a href="{{ $baseUrl }}" class="font-semibold underline">browse our tours</a> and click "Book This Tour" on any tour page to start a booking.
+                    Please <a href="{{ url('/' . $locale . '/tours') }}" class="font-semibold underline">browse our tours</a> and click "Book This Tour" on any tour page to start a booking.
                 </div>
             @endif
 
