@@ -53,11 +53,14 @@ class SectionBackgroundResource extends Resource
                             ->required()
                             ->live(),
 
-                        Forms\Components\ColorPicker::make('bg_value')
+                        // Use temporary fields to avoid type collisions between color (string)
+                        // and file upload (array) while editing. We'll map these into
+                        // `bg_value` before saving in the page class.
+                        Forms\Components\ColorPicker::make('bg_color')
                             ->label('Background Color')
                             ->visible(fn (Get $get) => $get('bg_type') === 'color'),
 
-                        Forms\Components\FileUpload::make('bg_value')
+                        Forms\Components\FileUpload::make('bg_image')
                             ->label('Background Image')
                             ->image()
                             ->directory('section-backgrounds')
