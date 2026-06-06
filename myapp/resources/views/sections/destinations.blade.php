@@ -1,20 +1,21 @@
 @php
-    $__bgType  = $sectionSettings->destinations_bg_type  ?? 'color';
-    $__bgColor = $sectionSettings->destinations_bg_color ?? '#ffffff';
-    $__bgImage = $sectionSettings->destinations_bg_image ?? '';
-    $__style = '';
-    if ($__bgType === 'color') {
-        $__style = 'background-color: ' . $__bgColor . ';';
-    } elseif ($__bgType === 'image' && $__bgImage) {
-        $__style = 'background-image: url(' . asset('storage/' . $__bgImage) . '); background-size: cover; background-position: center; background-repeat: no-repeat;';
-    }
+    $bg = $sectionBackgrounds['destinations'] ?? null;
+    $hasBg = $bg && $bg->bg_type !== 'none' && $bg->bg_value;
+    $bgStyle = $hasBg ? $bg->inline_style : '';
+    $overlayStyle = $hasBg ? $bg->overlay_style : '';
+    $headingClass = ($bg && $bg->text_color === 'light') ? 'text-white' : 'text-slate-950';
+    $mutedClass = ($bg && $bg->text_color === 'light') ? 'text-white/75' : 'text-slate-600';
 @endphp
-<section class="px-6 py-16 lg:px-8" style="{{ $__style }}">
-    <div class="mx-auto max-w-7xl">
+
+<section class="px-6 py-16 lg:px-8 relative" style="{{ $bgStyle }}">
+    @if ($overlayStyle)
+        <div class="absolute inset-0 pointer-events-none" style="{{ $overlayStyle }}"></div>
+    @endif
+    <div class="relative mx-auto max-w-7xl">
         <div class="page-section-header text-center">
             <span class="badge-pill bg-[var(--color-accent)]/15 text-[var(--color-accent)]">Top destination</span>
-            <h2 class="mt-4 text-4xl font-black text-slate-950">Experience the world's top destinations like never before</h2>
-            <p class="mt-3 mx-auto max-w-2xl text-slate-600">Discover inspiring cities, iconic landmarks, and unforgettable journeys with visuals that bring every destination to life.</p>
+            <h2 class="mt-4 text-4xl font-black {{ $headingClass }}">Experience the world's top destinations like never before</h2>
+            <p class="mt-3 mx-auto max-w-2xl {{ $mutedClass }}">Discover inspiring cities, iconic landmarks, and unforgettable journeys with visuals that bring every destination to life.</p>
         </div>
 
         <div class="grid gap-6 mt-10 lg:grid-cols-[1.15fr_0.85fr]">

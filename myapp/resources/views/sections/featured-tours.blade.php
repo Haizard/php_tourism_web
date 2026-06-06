@@ -1,20 +1,22 @@
 @php
-    $__bgType  = $sectionSettings->featured_tours_bg_type  ?? 'color';
-    $__bgColor = $sectionSettings->featured_tours_bg_color ?? '#f8fafc';
-    $__bgImage = $sectionSettings->featured_tours_bg_image ?? '';
-    $__style = '';
-    if ($__bgType === 'color') {
-        $__style = 'background-color: ' . $__bgColor . ';';
-    } elseif ($__bgType === 'image' && $__bgImage) {
-        $__style = 'background-image: url(' . asset('storage/' . $__bgImage) . '); background-size: cover; background-position: center; background-repeat: no-repeat;';
-    }
+    $bg = $sectionBackgrounds['featured_tours'] ?? null;
+    $hasBg = $bg && $bg->bg_type !== 'none' && $bg->bg_value;
+    $bgStyle = $hasBg ? $bg->inline_style : '';
+    $overlayStyle = $hasBg ? $bg->overlay_style : '';
+    $textClass = ($bg && $bg->text_color === 'light') ? 'text-white' : '';
+    $mutedClass = ($bg && $bg->text_color === 'light') ? 'text-white/75' : 'text-slate-600';
+    $headingClass = ($bg && $bg->text_color === 'light') ? 'text-white' : 'text-slate-950';
 @endphp
-<section class="px-6 py-16 lg:px-8" style="{{ $__style }}">
-    <div class="mx-auto max-w-7xl">
+
+<section class="px-6 py-16 lg:px-8 relative" style="{{ $bgStyle }}">
+    @if ($overlayStyle)
+        <div class="absolute inset-0 pointer-events-none" style="{{ $overlayStyle }}"></div>
+    @endif
+    <div class="relative mx-auto max-w-7xl">
         <div class="page-section-header text-center">
             <span class="badge-pill bg-[var(--color-accent)]/15 text-[var(--color-accent)]">Hot deals</span>
-            <h2 class="mt-4 text-4xl font-black text-slate-950">Fire up your savings with our hot deals</h2>
-            <p class="mt-3 mx-auto max-w-2xl text-slate-600">Hand-picked offers for iconic destinations, luxury stays, and flexible itineraries built to save you time and money.</p>
+            <h2 class="mt-4 text-4xl font-black {{ $headingClass }}">Fire up your savings with our hot deals</h2>
+            <p class="mt-3 mx-auto max-w-2xl {{ $mutedClass }}">Hand-picked offers for iconic destinations, luxury stays, and flexible itineraries built to save you time and money.</p>
         </div>
 
         <div class="grid gap-6 lg:grid-cols-4 mt-10">

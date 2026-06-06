@@ -1,16 +1,17 @@
 @php
-    $__bgType  = $sectionSettings->newsletter_bg_type  ?? 'color';
-    $__bgColor = $sectionSettings->newsletter_bg_color ?? '#f8fafc';
-    $__bgImage = $sectionSettings->newsletter_bg_image ?? '';
-    $__style = '';
-    if ($__bgType === 'color') {
-        $__style = 'background-color: ' . $__bgColor . ';';
-    } elseif ($__bgType === 'image' && $__bgImage) {
-        $__style = 'background-image: url(' . asset('storage/' . $__bgImage) . '); background-size: cover; background-position: center; background-repeat: no-repeat;';
-    }
+    $bg = $sectionBackgrounds['newsletter'] ?? null;
+    $hasBg = $bg && $bg->bg_type !== 'none' && $bg->bg_value;
+    $bgStyle = $hasBg ? $bg->inline_style : '';
+    $overlayStyle = $hasBg ? $bg->overlay_style : '';
+    $headingClass = ($bg && $bg->text_color === 'light') ? 'text-white' : 'text-slate-950';
+    $mutedClass = ($bg && $bg->text_color === 'light') ? 'text-white/75' : 'text-slate-600';
 @endphp
-<section class="px-6 py-12 lg:px-8" style="{{ $__style }}">
-    <div class="mx-auto max-w-7xl">
+
+<section class="px-6 py-12 lg:px-8 relative" style="{{ $bgStyle }}">
+    @if ($overlayStyle)
+        <div class="absolute inset-0 pointer-events-none" style="{{ $overlayStyle }}"></div>
+    @endif
+    <div class="relative mx-auto max-w-7xl">
         <x-glass-card class="grid gap-8 lg:grid-cols-[1.5fr_1fr] items-center">
             <div>
                 <p class="text-sm font-semibold uppercase tracking-[0.35em] text-[var(--color-accent)]">Stay updated</p>

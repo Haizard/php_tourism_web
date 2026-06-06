@@ -1,21 +1,24 @@
 @php
-    $heroBgType  = $sectionSettings->hero_bg_type  ?? 'none';
-    $heroBgImage = $sectionSettings->hero_bg_image  ?? '';
-    $heroBgColor = $sectionSettings->hero_bg_color  ?? '#0f172a';
-    $heroImageStyle = '';
-    $heroSectionExtra = '';
-    if ($heroBgType === 'image' && $heroBgImage) {
-        $heroImageStyle = 'background-image: url(' . asset('storage/' . $heroBgImage) . '); background-size: cover; background-position: center;';
-    } elseif ($heroBgType === 'color') {
-        $heroSectionExtra = 'background-color: ' . $heroBgColor . ';';
-    }
+    $bg = $sectionBackgrounds['hero'] ?? null;
+    $hasBg = $bg && $bg->bg_type !== 'none' && $bg->bg_value;
+    $bgStyle = $hasBg ? $bg->inline_style : '';
+    $overlayStyle = $hasBg ? $bg->overlay_style : '';
+    $textClass = ($bg && $bg->text_color === 'light') ? 'text-white' : '';
 @endphp
-<section class="page-hero page-hero--hero1 relative overflow-hidden" style="{{ $heroSectionExtra }}">
-    <div class="page-hero__image absolute inset-0" style="{{ $heroImageStyle }}"></div>
-    <div class="page-hero__overlay absolute inset-0 bg-slate-950/75"></div>
+
+<section class="page-hero {{ $hasBg ? '' : 'page-hero--hero1' }} relative overflow-hidden" style="{{ $bgStyle }}">
+    @if (!$hasBg)
+        <div class="page-hero__image absolute inset-0"></div>
+    @endif
+    @if ($overlayStyle)
+        <div class="absolute inset-0 pointer-events-none" style="{{ $overlayStyle }}"></div>
+    @elseif (!$hasBg)
+        <div class="page-hero__overlay absolute inset-0 bg-slate-950/75"></div>
+    @endif
+
     <div class="relative mx-auto max-w-7xl px-6 py-20 lg:px-8">
         <div class="grid gap-10 lg:grid-cols-[1.12fr_0.88fr] lg:items-center">
-            <div class="max-w-2xl text-white">
+            <div class="max-w-2xl {{ $hasBg && $bg->text_color === 'light' ? 'text-white' : 'text-white' }}">
                 <span class="inline-flex items-center rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-pink-200 shadow-[0_20px_80px_rgba(236,72,153,0.08)]">
                     Ticket Plan
                 </span>
@@ -25,12 +28,9 @@
                     <a href="{{ url("/{$currentLocale}/tours") }}" class="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[var(--color-primary)] via-[var(--color-accent)] to-[var(--color-primary)] px-7 py-3 text-sm font-semibold text-white shadow-2xl shadow-[rgba(140,92,246,0.28)] transition hover:-translate-y-0.5">
                         Discover Now
                     </a>
-                    <button
-                        onclick="window.dispatchEvent(new CustomEvent('open-booking-modal', { detail: { tourId: null, tourTitle: 'Plan Your Trip', tourPrice: 0 } }))"
-                        class="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-7 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
-                    >
+                    <a href="{{ url("/{$currentLocale}/contact") }}" class="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 px-7 py-3 text-sm font-semibold text-white transition hover:bg-white/20">
                         Book a Trip
-                    </button>
+                    </a>
                 </div>
             </div>
 

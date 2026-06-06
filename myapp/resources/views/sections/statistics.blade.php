@@ -1,16 +1,15 @@
 @php
-    $__bgType  = $sectionSettings->statistics_bg_type  ?? 'color';
-    $__bgColor = $sectionSettings->statistics_bg_color ?? '#ffffff';
-    $__bgImage = $sectionSettings->statistics_bg_image ?? '';
-    $__style = '';
-    if ($__bgType === 'color') {
-        $__style = 'background-color: ' . $__bgColor . ';';
-    } elseif ($__bgType === 'image' && $__bgImage) {
-        $__style = 'background-image: url(' . asset('storage/' . $__bgImage) . '); background-size: cover; background-position: center; background-repeat: no-repeat;';
-    }
+    $bg = $sectionBackgrounds['statistics'] ?? null;
+    $hasBg = $bg && $bg->bg_type !== 'none' && $bg->bg_value;
+    $bgStyle = $hasBg ? $bg->inline_style : '';
+    $overlayStyle = $hasBg ? $bg->overlay_style : '';
 @endphp
-<section class="px-6 py-12 lg:px-8" style="{{ $__style }}">
-    <div class="mx-auto grid max-w-7xl gap-6 md:grid-cols-3">
+
+<section class="px-6 py-12 lg:px-8 relative" style="{{ $bgStyle }}">
+    @if ($overlayStyle)
+        <div class="absolute inset-0 pointer-events-none" style="{{ $overlayStyle }}"></div>
+    @endif
+    <div class="relative mx-auto grid max-w-7xl gap-6 md:grid-cols-3">
         <x-glass-card class="space-y-4">
             <p class="text-4xl font-black text-[var(--color-primary)]">6+</p>
             <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Supported locales</p>
