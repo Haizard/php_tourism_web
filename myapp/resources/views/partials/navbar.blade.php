@@ -1,8 +1,19 @@
 @php
     use App\Models\Destination;
 
-    $locale = $currentLocale ?? app()->getLocale();
+    $locale      = $currentLocale ?? app()->getLocale();
     $currentPath = request()->path();
+
+    $localeMeta = [
+        'en' => ['flag' => '🇬🇧', 'label' => 'EN'],
+        'fr' => ['flag' => '🇫🇷', 'label' => 'FR'],
+        'de' => ['flag' => '🇩🇪', 'label' => 'DE'],
+        'es' => ['flag' => '🇪🇸', 'label' => 'ES'],
+        'ar' => ['flag' => '🇸🇦', 'label' => 'AR'],
+        'sw' => ['flag' => '🇹🇿', 'label' => 'SW'],
+    ];
+
+    $enabledLocales = $languageSettings->enabledLocales ?? ['en'];
 
     $builtItems = $navItems->map(function ($item) use ($locale, $currentPath) {
         $dropdown = [];
@@ -41,9 +52,7 @@
             $url = '#';
         }
 
-        $label = $item->label
-            ?: ($item->type === 'category' ? ($item->category?->name ?? 'Category') : 'Destinations');
-
+        $label    = $item->label ?: ($item->type === 'category' ? ($item->category?->name ?? 'Category') : 'Destinations');
         $isActive = $url !== '#' && str_contains('/' . $currentPath, parse_url($url, PHP_URL_PATH) ?? '');
 
         return compact('label', 'url', 'dropdown', 'isActive', 'item');
@@ -53,24 +62,26 @@
 <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/40 shadow-sm"
      x-data="{ mobileOpen: false }">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between py-3 lg:justify-center lg:gap-2 lg:flex-wrap">
+        <div class="flex items-center justify-between py-3 gap-3">
 
-            {{-- Mobile: site name / logo on the left --}}
+            {{-- Logo / site name (always visible) --}}
             <a href="{{ url('/' . $locale) }}"
-               class="flex items-center gap-2 font-bold text-slate-900 text-lg lg:hidden">
-                @php $generalSettings = app(\App\Settings\GeneralSettings::class); @endphp
+               class="flex flex-shrink-0 items-center gap-2 font-black text-slate-900 text-lg">
                 @if($generalSettings->logo)
-                    <img src="{{ asset('storage/' . $generalSettings->logo) }}" alt="{{ $generalSettings->siteName }}" class="h-8 w-auto object-contain">
+                    <img src="{{ asset('storage/' . $generalSettings->logo) }}"
+                         alt="{{ $generalSettings->siteName }}"
+                         class="h-8 w-auto object-contain">
                 @else
-                    {{ $generalSettings->siteName }}
+                    <span class="hidden sm:inline-block text-base font-black tracking-tight text-slate-900 leading-none">
+                        {{ $generalSettings->siteName }}
+                    </span>
                 @endif
             </a>
 
-            {{-- Desktop nav pills --}}
-            <div class="hidden lg:flex flex-wrap items-center justify-center gap-2">
+            {{-- Desktop nav pills (centred between logo and lang switcher) --}}
+            <div class="hidden lg:flex flex-1 flex-wrap items-center justify-center gap-2">
                 @foreach ($builtItems as $navData)
                     @if (count($navData['dropdown']) > 0)
-                        {{-- Dropdown item --}}
                         <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
                             <button
                                 @click="open = !open"
@@ -78,10 +89,9 @@
                             >
                                 {{ $navData['label'] }}
                                 <svg class="h-3.5 w-3.5 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
                                 </svg>
                             </button>
-
                             <div
                                 x-show="open"
                                 x-transition:enter="transition ease-out duration-150"
@@ -91,8 +101,7 @@
                                 x-transition:leave-start="opacity-100 translate-y-0"
                                 x-transition:leave-end="opacity-0 translate-y-1"
                                 class="absolute left-0 top-full z-50 mt-1 min-w-[200px] rounded-2xl border border-slate-200/60 bg-white/95 shadow-xl shadow-slate-900/10 backdrop-blur-xl overflow-hidden"
-                                style="display: none;"
-                            >
+                                style="display: none;">
                                 <div class="py-2">
                                     <a href="{{ $navData['url'] }}"
                                        class="block px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-primary)] hover:bg-slate-50">
@@ -118,18 +127,61 @@
                 @endforeach
             </div>
 
-            {{-- Mobile: hamburger button --}}
-            <button
-                @click="mobileOpen = !mobileOpen"
-                class="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 bg-white/80 text-slate-700 hover:bg-slate-50 transition-colors"
-                aria-label="Toggle menu">
-                <svg x-show="!mobileOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-                <svg x-show="mobileOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
+            {{-- Right side: Language switcher + mobile hamburger --}}
+            <div class="flex items-center gap-2 flex-shrink-0">
+
+                {{-- Language switcher (desktop) --}}
+                @if(count($enabledLocales) > 1)
+                    <div class="relative hidden lg:block" x-data="{ langOpen: false }" @mouseenter="langOpen = true" @mouseleave="langOpen = false">
+                        <button @click="langOpen = !langOpen"
+                                class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white hover:border-slate-300 shadow-sm">
+                            <span>{{ $localeMeta[$locale]['flag'] ?? '🌐' }}</span>
+                            <span>{{ $localeMeta[$locale]['label'] ?? strtoupper($locale) }}</span>
+                            <svg class="h-3 w-3 text-slate-400 transition-transform" :class="langOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div
+                            x-show="langOpen"
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 translate-y-1"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 translate-y-1"
+                            class="absolute right-0 top-full z-50 mt-1 min-w-[140px] rounded-2xl border border-slate-200/60 bg-white/95 shadow-xl backdrop-blur-xl overflow-hidden"
+                            style="display:none;">
+                            <div class="py-2">
+                                @foreach ($enabledLocales as $loc)
+                                    @php
+                                        $switchPath = preg_replace('#^/?[a-z]{2}(/?|$)#', $loc . '/', ltrim(request()->path(), '/'));
+                                        $switchUrl  = url('/' . $switchPath);
+                                    @endphp
+                                    <a href="{{ $switchUrl }}"
+                                       class="flex items-center gap-2.5 px-4 py-2.5 text-sm transition
+                                              {{ $loc === $locale ? 'font-bold text-[var(--color-accent)] bg-[var(--color-accent)]/5' : 'font-medium text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]' }}">
+                                        <span class="text-base leading-none">{{ $localeMeta[$loc]['flag'] ?? '🌐' }}</span>
+                                        <span>{{ $localeMeta[$loc]['label'] ?? strtoupper($loc) }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Mobile hamburger --}}
+                <button
+                    @click="mobileOpen = !mobileOpen"
+                    class="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 bg-white/80 text-slate-700 hover:bg-slate-50 transition-colors"
+                    aria-label="Toggle menu">
+                    <svg x-show="!mobileOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                    <svg x-show="mobileOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         {{-- Mobile nav drawer --}}
@@ -159,9 +211,7 @@
                             </button>
                             <div x-show="subOpen" class="mt-1 ml-4 space-y-1 border-l-2 border-slate-100 pl-3" style="display:none;">
                                 <a href="{{ $navData['url'] }}"
-                                   class="block px-3 py-2 text-xs font-bold uppercase tracking-widest text-[var(--color-primary)]">
-                                    View All
-                                </a>
+                                   class="block px-3 py-2 text-xs font-bold uppercase tracking-widest text-[var(--color-primary)]">View All</a>
                                 @foreach ($navData['dropdown'] as $child)
                                     <a href="{{ $child['url'] }}"
                                        class="block px-3 py-2 text-sm text-slate-600 hover:text-[var(--color-primary)] transition-colors">
@@ -180,6 +230,27 @@
                         </a>
                     @endif
                 @endforeach
+
+                {{-- Mobile language switcher --}}
+                @if(count($enabledLocales) > 1)
+                    <div class="border-t border-slate-100 pt-3 mt-3">
+                        <p class="px-4 text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Language</p>
+                        <div class="flex flex-wrap gap-2 px-4">
+                            @foreach ($enabledLocales as $loc)
+                                @php
+                                    $switchPath = preg_replace('#^/?[a-z]{2}(/?|$)#', $loc . '/', ltrim(request()->path(), '/'));
+                                    $switchUrl  = url('/' . $switchPath);
+                                @endphp
+                                <a href="{{ $switchUrl }}"
+                                   class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition
+                                          {{ $loc === $locale ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]' : 'border border-slate-200 text-slate-600 hover:border-slate-300' }}">
+                                    <span>{{ $localeMeta[$loc]['flag'] ?? '🌐' }}</span>
+                                    <span>{{ $localeMeta[$loc]['label'] ?? strtoupper($loc) }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

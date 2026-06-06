@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\NavItem;
 use App\Models\SectionBackground;
+use App\Models\Tour;
 use App\Settings\GeneralSettings;
 use App\Settings\LanguageSettings;
 use App\Settings\MailSettings;
@@ -43,6 +44,16 @@ class AppServiceProvider extends ServiceProvider
             $navItems = collect();
         }
 
+        try {
+            $featuredTours = Tour::with('category')
+                ->where('is_published', true)
+                ->inRandomOrder()
+                ->take(4)
+                ->get();
+        } catch (\Exception $e) {
+            $featuredTours = collect();
+        }
+
         View::share(compact(
             'generalSettings',
             'themeSettings',
@@ -50,7 +61,8 @@ class AppServiceProvider extends ServiceProvider
             'languageSettings',
             'mailSettings',
             'sectionBackgrounds',
-            'navItems'
+            'navItems',
+            'featuredTours'
         ));
     }
 }
