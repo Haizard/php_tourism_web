@@ -39,7 +39,7 @@ Route::prefix('{locale}')
     ->group(function (): void {
         Route::view('/', 'pages.home')->name('home');
         Route::view('/about', 'pages.about')->name('about');
-        Route::view('/tours', 'pages.tours')->name('tours.index');
+        Route::get('/tours', [TourController::class, 'index'])->name('tours.index');
         Route::get('/tours/{slug}', [TourController::class, 'show'])->name('tours.show');
         Route::post('/tours/{tour}/book', [BookingController::class, 'store'])->where('tour', '\d+')->name('booking.store');
         Route::post('/tours/{tour}/review', [ReviewController::class, 'store'])->where('tour', '\d+')->name('review.store');
