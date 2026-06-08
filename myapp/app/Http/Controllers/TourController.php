@@ -102,4 +102,21 @@ class TourController extends Controller
             'ratingCounts'  => $ratingCounts,
         ]);
     }
+
+    public function showDestination(string $locale, string $slug): View
+    {
+        $destination = Destination::where('slug', $slug)->where('is_published', true)->firstOrFail();
+        
+        // Get tours for this destination
+        $tours = Tour::where('destination_id', $destination->id)
+            ->where('is_published', true)
+            ->orderBy('title')
+            ->get();
+
+        return view('pages.destination-show', [
+            'destination' => $destination,
+            'tours' => $tours,
+            'currentLocale' => $locale,
+        ]);
+    }
 }

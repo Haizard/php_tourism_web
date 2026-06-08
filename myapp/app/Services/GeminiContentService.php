@@ -18,7 +18,7 @@ class GeminiContentService
         $this->baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
         // Use gemini-2.0-flash for better quality, but it has stricter rate limits
         // If you hit rate limits, change to 'gemini-1.5-flash' which has higher free tier limits
-        $this->model = env('GEMINI_MODEL', 'GEMINI_MODEL=gemini-1.5-flash');
+        $this->model = env('GEMINI_MODEL', 'gemini-2.0-flash');
     }
 
     public function isAvailable(): bool

@@ -39,6 +39,7 @@ Route::prefix('{locale}')
         Route::get('/tours/{slug}', [TourController::class, 'show'])->name('tours.show');
         Route::post('/tours/{tour}/book', [BookingController::class, 'store'])->where('tour', '\d+')->name('booking.store');
         Route::view('/destinations', 'pages.destinations')->name('destinations.index');
+        Route::get('/destinations/{slug}', [TourController::class, 'showDestination'])->name('destination.show');
         Route::view('/blog', 'pages.blog')->name('blog.index');
         Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
         Route::view('/gallery', 'pages.gallery')->name('gallery');
