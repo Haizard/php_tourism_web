@@ -29,9 +29,28 @@
             }
         </style>
         @if (!empty($themeSettings->customCss))
-        <style id="custom-css">
-            {{ $themeSettings->customCss }}
-        </style>
+        <style id="custom-css">{{ $themeSettings->customCss }}</style>
+        @endif
+        @php
+            $routeName  = request()->route()?->getName() ?? '';
+            $routePath  = request()->path();
+            $pageCss = '';
+            if (preg_match('#^[a-z]{2}/?$#', $routePath) || $routeName === 'home') {
+                $pageCss = $themeSettings->homeCss ?? '';
+            } elseif (preg_match('#/tours/[^/]+#', $routePath) || str_contains($routeName, 'tours.show')) {
+                $pageCss = $themeSettings->tourDetailCss ?? '';
+            } elseif (str_contains($routePath, '/tours') || str_contains($routeName, 'tours')) {
+                $pageCss = $themeSettings->toursCss ?? '';
+            } elseif (str_contains($routePath, '/blog') || str_contains($routeName, 'blog')) {
+                $pageCss = $themeSettings->blogCss ?? '';
+            } elseif (str_contains($routePath, '/contact') || str_contains($routeName, 'contact')) {
+                $pageCss = $themeSettings->contactCss ?? '';
+            } elseif (str_contains($routeName, 'page') || str_contains($routeName, 'static')) {
+                $pageCss = $themeSettings->customPagesCss ?? '';
+            }
+        @endphp
+        @if (!empty($pageCss))
+        <style id="page-css">{{ $pageCss }}</style>
         @endif
         <x-seo :title="$title ?? $generalSettings->siteName" :description="$description ?? $generalSettings->tagline" />
         @vite(['resources/css/app.css', 'resources/js/app.js'])
