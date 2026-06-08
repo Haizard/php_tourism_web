@@ -116,5 +116,141 @@
                 toggle();
             })();
         </script>
+
+        {{-- ── CSS Inspector (activated when ?_inspect=1 is in URL) ── --}}
+        <script>
+        (function () {
+            if (!new URLSearchParams(location.search).has('_inspect')) return;
+
+            /* ── Custom classes we know about in this project ── */
+            var KNOWN = [
+                'page-hero','page-hero__image','page-hero__overlay','hero-stack-card',
+                'top-destination-card','glass-card','badge-pill','card-media',
+                'gradient-bg','page-section-header','nav-pill-active','tours-grid',
+                'filter-tag','tours-filter','booking-sidebar','accordion-header',
+                'accordion-body','tabs-header','tour-price','tour-detail-content',
+                'blog-detail-content','custom-page-content','custom-page-hero','prose',
+                'back-to-top',
+            ];
+
+            var SEMANTIC = {header:1,footer:1,main:1,nav:1,section:1,article:1,aside:1,form:1};
+
+            function isUtility(c) {
+                return /^(p[xytblr]?|m[xytblr]?|gap|space[xy]?|w|h|min-[wh]|max-[wh]|text|font|leading|tracking|align|justify|items|content|self|flex|grid|col|row|rounded|border|shadow|opacity|ring|inset|z|overflow|object|aspect|cursor|select|pointer|will|sr|not)-/.test(c)
+                    || /^(bg|text|border|ring|fill|stroke|divide|accent|decoration)-(white|black|transparent|current|inherit|slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)/.test(c)
+                    || /^(transition|duration|ease|delay|scale|rotate|translate|skew|origin|from|via|to)-/.test(c)
+                    || /^(flex|grid|inline|block|hidden|relative|absolute|fixed|sticky|overflow|truncate|antialiased|capitalize|uppercase|lowercase|italic|underline|line-through|no-underline|list-none|appearance-none|outline-none|touch-none|select-none|resize-none|whitespace-nowrap|break-all|break-words)$/.test(c);
+            }
+
+            function smartSelector(el) {
+                if (!el || el === document.body || el === document.documentElement) return 'body';
+                if (el.id && !/^(__|\d)/.test(el.id)) return '#' + el.id;
+
+                var tag    = el.tagName.toLowerCase();
+                var klasses = Array.from(el.classList).filter(function(c){ return !c.startsWith('__css-inspector'); });
+
+                /* prefer known project classes */
+                var known = klasses.filter(function(c){ return KNOWN.indexOf(c) !== -1; });
+                if (known.length) return known.map(function(c){ return '.'+c; }).join('');
+
+                /* semantic HTML tag (optionally + one non-utility class) */
+                if (SEMANTIC[tag]) {
+                    var extra = klasses.find(function(c){ return !isUtility(c); });
+                    return extra ? tag + '.' + extra : tag;
+                }
+
+                /* non-utility class on any element */
+                var nu = klasses.find(function(c){ return !isUtility(c); });
+                if (nu) return tag + '.' + nu;
+
+                /* walk up one level for context */
+                var par = el.parentElement;
+                if (par && par !== document.body) {
+                    var ps = smartSelector(par);
+                    if (ps && ps !== 'body') return ps + ' > ' + tag;
+                }
+                return tag;
+            }
+
+            /* ── Inject styles ── */
+            var s = document.createElement('style');
+            s.textContent = [
+                '* { cursor: crosshair !important; user-select: none !important; }',
+                '.__ci-hover { outline: 2px dashed #6366f1 !important; outline-offset: 3px !important; background-color: rgba(99,102,241,.07) !important; }',
+                '.__ci-pick  { outline: 3px solid #10b981 !important; outline-offset: 3px !important; }',
+                '@keyframes __ci-flash { 0%{ background:rgba(16,185,129,.18); } 100%{ background:transparent; } }',
+                '.__ci-pick  { animation: __ci-flash .5s ease; }',
+            ].join('');
+            document.head.appendChild(s);
+
+            /* ── Tooltip ── */
+            var tip = document.createElement('div');
+            tip.id = '__ci-tip__';
+            tip.style.cssText = 'position:fixed;z-index:2147483647;background:#1e1b4b;color:#c7d2fe;font:600 11px/1.4 ui-monospace,monospace;padding:5px 10px 5px 9px;border-radius:7px;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid #4338ca;opacity:0;transition:opacity .12s;';
+            document.body.appendChild(tip);
+
+            /* ── Banner ── */
+            var banner = document.createElement('div');
+            banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2147483646;background:#4338ca;color:#fff;font:600 12px/1 ui-sans-serif,sans-serif;padding:6px 16px;text-align:center;letter-spacing:.03em;';
+            banner.textContent = '🔍 CSS Inspector active — hover to highlight, click to pick an element';
+            document.body.appendChild(banner);
+
+            var last = null;
+
+            document.addEventListener('mousemove', function(e) {
+                var el = document.elementFromPoint(e.clientX, e.clientY);
+                if (!el || el === tip || el === banner) return;
+
+                /* update tooltip position */
+                var tx = Math.min(e.clientX + 14, window.innerWidth - 440);
+                var ty = (e.clientY + 28 > window.innerHeight - 36) ? e.clientY - 38 : e.clientY + 14;
+                tip.style.left  = tx + 'px';
+                tip.style.top   = ty + 'px';
+                tip.style.opacity = '1';
+
+                if (el === last) return;
+                if (last) last.classList.remove('__ci-hover');
+                last = el;
+                el.classList.add('__ci-hover');
+
+                var sel = smartSelector(el);
+                tip.textContent = '<' + el.tagName.toLowerCase() + '>  →  ' + sel;
+            }, { passive: true });
+
+            document.addEventListener('mouseleave', function() { tip.style.opacity = '0'; });
+
+            document.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var el = e.target;
+                if (el === tip || el === banner) return;
+                var sel = smartSelector(el);
+
+                /* flash green */
+                if (last) last.classList.remove('__ci-hover');
+                el.classList.add('__ci-pick');
+                tip.textContent = '✓ Picked: ' + sel;
+                tip.style.background = '#064e3b';
+                tip.style.color = '#6ee7b7';
+                setTimeout(function() {
+                    el.classList.remove('__ci-pick');
+                    tip.style.background = '#1e1b4b';
+                    tip.style.color = '#c7d2fe';
+                }, 900);
+
+                /* send to parent CSS editor */
+                window.parent.postMessage({
+                    type: 'css-inspector-pick',
+                    selector: sel,
+                    tag: el.tagName.toLowerCase(),
+                    classes: Array.from(el.classList).slice(0, 8),
+                    text: (el.textContent || '').trim().slice(0, 60),
+                }, '*');
+            }, true);
+
+            /* tell parent we're ready */
+            window.parent.postMessage({ type: 'css-inspector-ready' }, '*');
+        })();
+        </script>
     </body>
 </html>
