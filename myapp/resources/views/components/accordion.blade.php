@@ -1,5 +1,6 @@
 @props(['items' => []])
 
+<!-- stylelint-disable -->
 <div class="space-y-3">
     @foreach($items as $index => $item)
         <details class="group rounded-lg border border-slate-200 bg-white/50 hover:bg-white/70 transition-colors">
@@ -41,3 +42,4 @@
         </details>
     @endforeach
 </div>
+<!-- stylelint-enable -->

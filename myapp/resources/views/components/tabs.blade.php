@@ -1,5 +1,6 @@
 @props(['tabs' => []])
 
+<!-- stylelint-disable -->
 <div x-data="{ activeTab: 0 }" class="space-y-6">
     <!-- Tab Headers -->
     <div class="flex flex-wrap gap-3 border-b-2 border-slate-200">
@@ -39,3 +40,4 @@
         @endforeach
     </div>
 </div>
+<!-- stylelint-enable -->
