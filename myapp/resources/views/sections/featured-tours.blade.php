@@ -34,10 +34,10 @@
                             ? (str_starts_with($tour->featured_image, 'http') ? $tour->featured_image : asset('storage/' . $tour->featured_image))
                             : asset('images/creation-africa/hero1.jpg');
                     @endphp
-                    <article class="group overflow-hidden rounded-[2rem] bg-gradient-to-br from-[var(--color-primary)]/10 via-white/40 to-[var(--color-accent)]/10 p-1 shadow-2xl shadow-slate-900/10 transition hover:-translate-y-1">
-                        <div class="rounded-[2rem] bg-white/90 p-5 h-full flex flex-col">
-                            {{-- Image --}}
-                            <div class="card-media h-48 rounded-[1.5rem] overflow-hidden flex-shrink-0 relative">
+                    <article class="group overflow-hidden rounded-2xl bg-white shadow-xl transition hover:shadow-2xl hover:-translate-y-1" style="border: 2px solid color-mix(in srgb, var(--color-primary) 20%, transparent);">
+                        <div class="h-full flex flex-col">
+                            {{-- Image (Full Width) --}}
+                            <div class="card-media h-48 overflow-hidden flex-shrink-0 relative">
                                 <img src="{{ $imageUrl }}" alt="{{ $tour->title }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                                 @if ($tour->category)
                                     <span class="absolute top-3 left-3 rounded-full bg-black/40 backdrop-blur-sm px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
@@ -45,14 +45,14 @@
                                     </span>
                                 @endif
                                 @if ($hasDiscount)
-                                    <span class="absolute top-3 right-3 rounded-full bg-red-500 px-2.5 py-1 text-[10px] font-bold text-white">
+                                    <span class="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[10px] font-bold text-white" style="background-color: var(--color-accent);">
                                         SALE
                                     </span>
                                 @endif
                             </div>
 
                             {{-- Content --}}
-                            <div class="mt-4 flex flex-col flex-1">
+                            <div class="p-5 flex flex-col flex-1">
                                 <h3 class="text-base font-black text-slate-950 leading-snug line-clamp-2">{{ $tour->title }}</h3>
 
                                 @if ($tour->duration)
