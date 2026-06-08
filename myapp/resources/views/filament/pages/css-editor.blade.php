@@ -23,6 +23,11 @@ if ($firstTourSlug) {
         previewKey: 0,
         pages: @js($previewPages),
         selectedPage: 'home',
+        pickMode: false,
+        pickedSelector: '',
+        pickedTag: '',
+        pickedClasses: [],
+
         selectPage(key) {
             this.selectedPage = key;
             this.previewSrc = this.pages[key]?.url ?? this.previewSrc;
@@ -34,8 +39,44 @@ if ($firstTourSlug) {
         },
         onIframeLoad() {
             this.previewLoading = false;
-        }
+        },
+        iframeSrc() {
+            return this.previewSrc + '?_preview=' + this.previewKey + (this.pickMode ? '&_inspect=1' : '');
+        },
+        togglePickMode() {
+            this.pickMode = !this.pickMode;
+            this.pickedSelector = '';
+            this.reloadPreview();
+        },
+        insertPicked() {
+            if (!this.pickedSelector) return;
+            const snippet = this.pickedSelector + ' {\n  /* your styles here */\n}';
+            window.dispatchEvent(new CustomEvent('css-editor-insert', { detail: { snippet } }));
+            this.pickedSelector = '';
+            this.pickMode = false;
+            this.reloadPreview();
+        },
+        dismissPick() {
+            this.pickedSelector = '';
+            this.pickedTag = '';
+            this.pickedClasses = [];
+        },
     }"
+    x-init="
+        window.addEventListener('message', (e) => {
+            if (!e.data) return;
+            if (e.data.type === 'css-inspector-pick') {
+                pickMode = false;
+                pickedSelector = e.data.selector || '';
+                pickedTag = e.data.tag || '';
+                pickedClasses = e.data.classes || [];
+                reloadPreview();
+            }
+            if (e.data.type === 'css-inspector-ready') {
+                previewLoading = false;
+            }
+        });
+    "
     @css-saved.window="if (showPreview) { reloadPreview(); }"
     class="space-y-4"
 >
@@ -98,8 +139,24 @@ if ($firstTourSlug) {
             </div>
 
             {{-- Controls --}}
-            <div class="flex items-center gap-2 ml-auto">
-                <span x-show="previewLoading" class="text-[10px] text-indigo-300 animate-pulse">Reloading…</span>
+            <div class="flex items-center gap-2 ml-auto flex-wrap">
+                <span x-show="previewLoading" class="text-[10px] text-indigo-300 animate-pulse">Loading…</span>
+
+                {{-- Pick Element button --}}
+                <button
+                    x-on:click="togglePickMode()"
+                    :class="pickMode
+                        ? 'bg-amber-400 text-amber-950 ring-2 ring-amber-300 ring-offset-1 ring-offset-indigo-900'
+                        : 'bg-indigo-700 hover:bg-indigo-600 text-indigo-200'"
+                    class="rounded-lg px-3 py-1.5 text-[10px] font-bold transition flex items-center gap-1.5"
+                    :title="pickMode ? 'Click any element in the preview to pick it — or click again to cancel' : 'Activate element picker: click any visible element to get its CSS selector'"
+                >
+                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/>
+                    </svg>
+                    <span x-text="pickMode ? '🎯 Click an element…' : '🔍 Pick Element'"></span>
+                </button>
+
                 <button
                     x-on:click="reloadPreview()"
                     class="rounded-lg bg-indigo-700 hover:bg-indigo-600 text-indigo-200 px-3 py-1.5 text-[10px] font-semibold transition flex items-center gap-1"
@@ -130,8 +187,47 @@ if ($firstTourSlug) {
             <span x-text="previewSrc" class="text-[10px] font-mono text-indigo-300 truncate"></span>
         </div>
 
+        {{-- ── Picked element result bar ── --}}
+        <div
+            x-show="pickedSelector"
+            x-transition
+            class="flex items-center gap-3 px-4 py-3 bg-emerald-900 border-b border-emerald-700"
+        >
+            <span class="flex-shrink-0 h-5 w-5 rounded-full bg-emerald-400 flex items-center justify-center text-emerald-900 text-[10px] font-black">✓</span>
+            <div class="flex-1 min-w-0">
+                <p class="text-[10px] text-emerald-300 font-semibold uppercase tracking-wider mb-0.5">Element picked</p>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <code class="text-sm font-mono font-bold text-emerald-200 bg-emerald-950/60 px-2 py-0.5 rounded" x-text="pickedSelector"></code>
+                    <template x-if="pickedTag">
+                        <span class="text-[10px] text-emerald-400 font-mono" x-text="'<' + pickedTag + '>'"></span>
+                    </template>
+                </div>
+                <div class="flex flex-wrap gap-1 mt-1" x-show="pickedClasses.length">
+                    <template x-for="cls in pickedClasses.slice(0,5)" :key="cls">
+                        <span class="text-[9px] font-mono bg-emerald-800/50 text-emerald-300 px-1.5 py-0.5 rounded" x-text="'.' + cls"></span>
+                    </template>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <button
+                    x-on:click="insertPicked()"
+                    class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-400 hover:bg-emerald-300 text-emerald-950 px-3 py-1.5 text-xs font-bold transition active:scale-95"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Insert into Editor
+                </button>
+                <button
+                    x-on:click="dismissPick()"
+                    class="text-emerald-500 hover:text-white text-xs font-semibold transition px-2 py-1"
+                    title="Dismiss"
+                >✕</button>
+            </div>
+        </div>
+
         {{-- iframe --}}
-        <div class="relative bg-white" style="height: 560px;">
+        <div class="relative bg-white" style="height: 580px;">
             {{-- Loading spinner overlay --}}
             <div
                 x-show="previewLoading"
@@ -142,14 +238,28 @@ if ($firstTourSlug) {
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                     </svg>
-                    <p class="text-sm font-semibold text-indigo-600">Loading preview…</p>
+                    <p class="text-sm font-semibold text-indigo-600" x-text="pickMode ? 'Activating inspector…' : 'Loading preview…'"></p>
                 </div>
             </div>
+
+            {{-- Pick-mode crosshair banner overlay (before iframe loads) --}}
+            <div
+                x-show="pickMode && !previewLoading"
+                class="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+            >
+                <div class="flex items-center gap-2 bg-amber-400 text-amber-950 rounded-full px-4 py-1.5 text-xs font-bold shadow-lg">
+                    <span class="animate-ping h-2 w-2 rounded-full bg-amber-700 opacity-75"></span>
+                    Hover over an element and click to pick it
+                </div>
+            </div>
+
             <iframe
+                id="css-preview-iframe"
                 :key="previewKey"
-                :src="previewSrc + '?_preview=' + previewKey"
+                :src="iframeSrc()"
                 x-on:load="onIframeLoad()"
                 class="w-full h-full border-0"
+                :class="pickMode ? 'cursor-crosshair' : ''"
                 title="Site Preview"
                 sandbox="allow-same-origin allow-scripts allow-forms"
             ></iframe>
@@ -157,7 +267,10 @@ if ($firstTourSlug) {
 
         {{-- Footer hint --}}
         <div class="px-4 py-2 bg-indigo-900 text-center">
-            <p class="text-[10px] text-indigo-300">Preview auto-refreshes after <strong class="text-indigo-200">Save</strong>. Your CSS changes are live immediately — no need to reload manually.</p>
+            <p class="text-[10px] text-indigo-300">
+                <strong class="text-indigo-200">Save</strong> = preview auto-refreshes ·
+                <strong class="text-amber-300">🔍 Pick Element</strong> = click any element to get its CSS selector instantly
+            </p>
         </div>
     </div>
 
@@ -187,6 +300,11 @@ if ($firstTourSlug) {
             $wire.set(prop, newVal);
         }
     }"
+    x-init="
+        window.addEventListener('css-editor-insert', (e) => {
+            if (e.detail?.snippet) insertSnippet(e.detail.snippet);
+        });
+    "
     class="grid gap-6 lg:grid-cols-5"
 >
 
