@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(SettingsSeeder::class);
+        $this->call(SectionBackgroundSeeder::class);
+        $this->call(NavItemSeeder::class);
 
         User::factory()->create([
             'name' => 'Test User',

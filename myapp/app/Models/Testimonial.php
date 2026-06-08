@@ -12,8 +12,11 @@ class Testimonial extends Model
 
     protected $fillable = [
         'author_name',
+        'review_title',
         'content',
         'rating',
+        'traveler_type',
+        'visit_date',
         'author_image',
         'author_title',
         'tour_id',
@@ -24,13 +27,26 @@ class Testimonial extends Model
 
     protected $casts = [
         'is_published' => 'boolean',
-        'rating' => 'integer',
-        'sort_order' => 'integer',
+        'rating'       => 'integer',
+        'sort_order'   => 'integer',
         'published_at' => 'datetime',
+        'visit_date'   => 'date',
     ];
 
     public function tour(): BelongsTo
     {
         return $this->belongsTo(Tour::class);
+    }
+
+    public function travelerTypeLabel(): string
+    {
+        return match ($this->traveler_type) {
+            'solo'     => '🧳 Solo Traveler',
+            'couple'   => '💑 Couple',
+            'family'   => '👨‍👩‍👧 Family',
+            'friends'  => '👫 Friends',
+            'business' => '💼 Business',
+            default    => '',
+        };
     }
 }

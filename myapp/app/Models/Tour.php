@@ -25,6 +25,7 @@ class Tour extends Model
         'itinerary',
         'included_services',
         'excluded_services',
+        'highlights',
         'seo_meta_title',
         'seo_meta_description',
         'seo_keywords',
@@ -40,6 +41,7 @@ class Tour extends Model
         'itinerary' => 'array',
         'included_services' => 'array',
         'excluded_services' => 'array',
+        'highlights' => 'array',
     ];
 
     public function category(): BelongsTo

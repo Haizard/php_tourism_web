@@ -1,114 +1,257 @@
 @php
-    $locale = $currentLocale ?? app()->getLocale();
+    use App\Models\Destination;
+
+    $locale      = $currentLocale ?? app()->getLocale();
     $currentPath = request()->path();
 
-    $staticItems = [
-        ['label' => 'Home',    'url' => url("/{$locale}"),          'type' => 'static'],
-        ['label' => 'Blog',    'url' => url("/{$locale}/blog"),      'type' => 'static'],
-        ['label' => 'Contact', 'url' => url("/{$locale}/contact"),   'type' => 'static'],
+    $localeMeta = [
+        'en' => ['flag' => '🇬🇧', 'label' => 'EN'],
+        'fr' => ['flag' => '🇫🇷', 'label' => 'FR'],
+        'de' => ['flag' => '🇩🇪', 'label' => 'DE'],
+        'es' => ['flag' => '🇪🇸', 'label' => 'ES'],
+        'ar' => ['flag' => '🇸🇦', 'label' => 'AR'],
+        'sw' => ['flag' => '🇹🇿', 'label' => 'SW'],
     ];
+
+    $enabledLocales = $languageSettings->enabledLocales ?? ['en'];
+
+    $builtItems = $navItems->map(function ($item) use ($locale, $currentPath) {
+        $dropdown = [];
+
+        if ($item->type === 'manual') {
+            $rawUrl = $item->url ?? '/';
+            if (str_starts_with($rawUrl, 'http')) {
+                $url = $rawUrl;
+            } else {
+                $url = url('/' . $locale . '/' . ltrim($rawUrl, '/'));
+                if (rtrim($url, '/') === rtrim(url('/' . $locale . '/'), '/')) {
+                    $url = url('/' . $locale);
+                }
+            }
+            foreach ($item->children as $child) {
+                $childRaw = $child->url ?? '/';
+                $childUrl = str_starts_with($childRaw, 'http') ? $childRaw : url('/' . $locale . '/' . ltrim($childRaw, '/'));
+                $dropdown[] = ['label' => $child->label, 'url' => $childUrl];
+            }
+        } elseif ($item->type === 'category' && $item->category) {
+            $url = url("/{$locale}/tours") . '?category=' . $item->category->slug;
+            foreach ($item->category->tours as $tour) {
+                $dropdown[] = ['label' => $tour->title, 'url' => url("/{$locale}/tours/{$tour->slug}")];
+            }
+        } elseif ($item->type === 'destinations_hub') {
+            $url = url("/{$locale}/destinations");
+            try {
+                $destinations = Destination::where('is_published', true)->orderBy('name')->get();
+                foreach ($destinations as $dest) {
+                    $dropdown[] = ['label' => $dest->name, 'url' => url("/{$locale}/destinations/{$dest->slug}")];
+                }
+            } catch (\Exception $e) {
+                $destinations = collect();
+            }
+        } else {
+            $url = '#';
+        }
+
+        $label    = $item->label ?: ($item->type === 'category' ? ($item->category?->name ?? 'Category') : 'Destinations');
+        $isActive = $url !== '#' && str_contains('/' . $currentPath, parse_url($url, PHP_URL_PATH) ?? '');
+
+        return compact('label', 'url', 'dropdown', 'isActive', 'item');
+    });
 @endphp
 
-<nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/40 shadow-sm">
-    <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-        <div class="flex flex-wrap items-center justify-center gap-3">
+<nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/40 shadow-sm"
+     x-data="{ mobileOpen: false }">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between py-3 gap-3">
 
-            {{-- Home pill --}}
-            @php $isActive = str_contains($currentPath, trim(parse_url(url("/{$locale}"), PHP_URL_PATH), '/')); @endphp
-            <a href="{{ url("/{$locale}") }}"
-               class="navbar-pill {{ $isActive ? 'navbar-pill-active' : '' }}">
-                Home
+            {{-- Logo / site name (always visible) --}}
+            <a href="{{ url('/' . $locale) }}"
+               class="flex flex-shrink-0 items-center gap-2 font-black text-slate-900 text-lg">
+                @if($generalSettings->logo)
+                    <img src="{{ asset('storage/' . $generalSettings->logo) }}"
+                         alt="{{ $generalSettings->siteName }}"
+                         class="h-8 w-auto object-contain">
+                @else
+                    <span class="hidden sm:inline-block text-base font-black tracking-tight text-slate-900 leading-none">
+                        {{ $generalSettings->siteName }}
+                    </span>
+                @endif
             </a>
 
-            {{-- Dynamic navbar items from admin --}}
-            @foreach ($navbarItems ?? [] as $item)
-                @php
-                    $resolvedLabel = $item->label ?: (
-                        $item->type === 'category'
-                            ? optional($item->category)->name
-                            : (
-                                $item->type === 'destination'
-                                    ? optional($item->destination)->name
-                                    : 'Link'
-                            )
-                    );
+            {{-- Desktop nav pills (centred between logo and lang switcher) --}}
+            <div class="hidden lg:flex flex-1 flex-wrap items-center justify-center gap-2">
+                @foreach ($builtItems as $navData)
+                    @if (count($navData['dropdown']) > 0)
+                        <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+                            <button
+                                @click="open = !open"
+                                class="navbar-pill {{ $navData['isActive'] ? 'navbar-pill-active' : '' }} inline-flex items-center gap-1"
+                            >
+                                {{ $navData['label'] }}
+                                <svg class="h-3.5 w-3.5 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div
+                                x-show="open"
+                                x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 translate-y-1"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 translate-y-1"
+                                class="absolute left-0 top-full z-50 mt-1 min-w-[200px] rounded-2xl border border-slate-200/60 bg-white/95 shadow-xl shadow-slate-900/10 backdrop-blur-xl overflow-hidden"
+                                style="display: none;">
+                                <div class="py-2">
+                                    <a href="{{ $navData['url'] }}"
+                                       class="block px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-primary)] hover:bg-slate-50">
+                                        View All
+                                    </a>
+                                    <div class="my-1 border-t border-slate-100"></div>
+                                    @foreach ($navData['dropdown'] as $child)
+                                        <a href="{{ $child['url'] }}"
+                                           class="block px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)] transition-colors">
+                                            {{ $child['label'] }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <a href="{{ $navData['url'] }}"
+                           @if($navData['item']->open_in_new_tab) target="_blank" rel="noopener" @endif
+                           class="navbar-pill {{ $navData['isActive'] ? 'navbar-pill-active' : '' }}">
+                            {{ $navData['label'] }}
+                        </a>
+                    @endif
+                @endforeach
+            </div>
 
-                    $hasDropdown = in_array($item->type, ['category', 'destination'])
-                        && $item->dropdownTours->isNotEmpty();
+            {{-- Right side: Language switcher + mobile hamburger --}}
+            <div class="flex items-center gap-2 flex-shrink-0">
 
-                    $itemUrl = $item->url ?: '#';
-                    $isItemActive = $item->url && str_contains($currentPath, trim(parse_url($item->url, PHP_URL_PATH), '/'));
-                @endphp
-
-                @if ($hasDropdown)
-                    <div x-data="{ open: false }" class="relative" @mouseenter="open = true" @mouseleave="open = false">
-                        <button
-                            @click="open = !open"
-                            class="navbar-pill {{ $isItemActive ? 'navbar-pill-active' : '' }} inline-flex items-center gap-1.5"
-                        >
-                            {{ $resolvedLabel }}
-                            <svg x-bind:class="open ? 'rotate-180' : ''" class="h-3.5 w-3.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                {{-- Language switcher (desktop) --}}
+                @if(count($enabledLocales) > 1)
+                    <div class="relative hidden lg:block" x-data="{ langOpen: false }" @mouseenter="langOpen = true" @mouseleave="langOpen = false">
+                        <button @click="langOpen = !langOpen"
+                                class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white hover:border-slate-300 shadow-sm">
+                            <span>{{ $localeMeta[$locale]['flag'] ?? '🌐' }}</span>
+                            <span>{{ $localeMeta[$locale]['label'] ?? strtoupper($locale) }}</span>
+                            <svg class="h-3 w-3 text-slate-400 transition-transform" :class="langOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
                             </svg>
                         </button>
-
                         <div
-                            x-show="open"
+                            x-show="langOpen"
                             x-transition:enter="transition ease-out duration-150"
-                            x-transition:enter-start="opacity-0 -translate-y-1 scale-95"
-                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            x-transition:enter-start="opacity-0 translate-y-1"
+                            x-transition:enter-end="opacity-100 translate-y-0"
                             x-transition:leave="transition ease-in duration-100"
-                            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                            x-transition:leave-end="opacity-0 -translate-y-1 scale-95"
-                            class="absolute left-0 top-full pt-2 w-64 z-50"
-                            x-cloak
-                        >
-                            <div class="rounded-2xl border border-slate-200/60 bg-white/95 backdrop-blur-xl shadow-xl shadow-slate-900/10 py-2 overflow-hidden">
-                                @foreach ($item->dropdownTours as $tour)
-                                    <a href="{{ url("/{$locale}/tours/{$tour->slug}") }}"
-                                       class="block px-4 py-2.5 text-sm text-slate-700 hover:bg-[var(--color-primary)]/8 hover:text-[var(--color-primary)] transition-colors duration-150">
-                                        {{ $tour->title }}
+                            x-transition:leave-start="opacity-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 translate-y-1"
+                            class="absolute right-0 top-full z-50 mt-1 min-w-[140px] rounded-2xl border border-slate-200/60 bg-white/95 shadow-xl backdrop-blur-xl overflow-hidden"
+                            style="display:none;">
+                            <div class="py-2">
+                                @foreach ($enabledLocales as $loc)
+                                    @php
+                                        $switchPath = preg_replace('#^/?[a-z]{2}(/?|$)#', $loc . '/', ltrim(request()->path(), '/'));
+                                        $switchUrl  = url('/' . $switchPath);
+                                    @endphp
+                                    <a href="{{ $switchUrl }}"
+                                       class="flex items-center gap-2.5 px-4 py-2.5 text-sm transition
+                                              {{ $loc === $locale ? 'font-bold text-[var(--color-accent)] bg-[var(--color-accent)]/5' : 'font-medium text-slate-700 hover:bg-slate-50 hover:text-[var(--color-primary)]' }}">
+                                        <span class="text-base leading-none">{{ $localeMeta[$loc]['flag'] ?? '🌐' }}</span>
+                                        <span>{{ $localeMeta[$loc]['label'] ?? strtoupper($loc) }}</span>
                                     </a>
                                 @endforeach
-                                @if ($item->type === 'category')
-                                    <div class="mx-4 my-1 border-t border-slate-100"></div>
-                                    <a href="{{ url("/{$locale}/tours") }}"
-                                       class="block px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-accent)] hover:bg-[var(--color-accent)]/8 transition-colors duration-150">
-                                        View all tours →
-                                    </a>
-                                @elseif ($item->type === 'destination')
-                                    <div class="mx-4 my-1 border-t border-slate-100"></div>
-                                    <a href="{{ url("/{$locale}/destinations") }}"
-                                       class="block px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-accent)] hover:bg-[var(--color-accent)]/8 transition-colors duration-150">
-                                        View all destinations →
-                                    </a>
-                                @endif
                             </div>
                         </div>
                     </div>
-                @else
-                    <a href="{{ $itemUrl }}"
-                       {{ $item->open_in_new_tab ? 'target=_blank rel=noopener' : '' }}
-                       class="navbar-pill {{ $isItemActive ? 'navbar-pill-active' : '' }}">
-                        {{ $resolvedLabel }}
-                    </a>
                 @endif
-            @endforeach
 
-            {{-- Blog & Contact always visible --}}
-            @php
-                $blogActive = str_contains($currentPath, "{$locale}/blog");
-                $contactActive = str_contains($currentPath, "{$locale}/contact");
-            @endphp
-            <a href="{{ url("/{$locale}/blog") }}"
-               class="navbar-pill {{ $blogActive ? 'navbar-pill-active' : '' }}">
-                Blog
-            </a>
-            <a href="{{ url("/{$locale}/contact") }}"
-               class="navbar-pill {{ $contactActive ? 'navbar-pill-active' : '' }}">
-                Contact
-            </a>
+                {{-- Mobile hamburger --}}
+                <button
+                    @click="mobileOpen = !mobileOpen"
+                    class="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 bg-white/80 text-slate-700 hover:bg-slate-50 transition-colors"
+                    aria-label="Toggle menu">
+                    <svg x-show="!mobileOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                    <svg x-show="mobileOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
 
+        {{-- Mobile nav drawer --}}
+        <div
+            x-show="mobileOpen"
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 -translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 -translate-y-2"
+            class="lg:hidden border-t border-slate-100 pb-4"
+            style="display: none;"
+            @click.outside="mobileOpen = false">
+            <div class="space-y-1 pt-3">
+                @foreach ($builtItems as $navData)
+                    @if (count($navData['dropdown']) > 0)
+                        <div x-data="{ subOpen: false }">
+                            <button
+                                @click="subOpen = !subOpen"
+                                class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-colors
+                                    {{ $navData['isActive'] ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]' : 'text-slate-700 hover:bg-slate-50' }}">
+                                {{ $navData['label'] }}
+                                <svg class="w-4 h-4 transition-transform" :class="subOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div x-show="subOpen" class="mt-1 ml-4 space-y-1 border-l-2 border-slate-100 pl-3" style="display:none;">
+                                <a href="{{ $navData['url'] }}"
+                                   class="block px-3 py-2 text-xs font-bold uppercase tracking-widest text-[var(--color-primary)]">View All</a>
+                                @foreach ($navData['dropdown'] as $child)
+                                    <a href="{{ $child['url'] }}"
+                                       class="block px-3 py-2 text-sm text-slate-600 hover:text-[var(--color-primary)] transition-colors">
+                                        {{ $child['label'] }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <a href="{{ $navData['url'] }}"
+                           @if($navData['item']->open_in_new_tab) target="_blank" rel="noopener" @endif
+                           @click="mobileOpen = false"
+                           class="block px-4 py-3 rounded-xl text-sm font-semibold transition-colors
+                               {{ $navData['isActive'] ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]' : 'text-slate-700 hover:bg-slate-50' }}">
+                            {{ $navData['label'] }}
+                        </a>
+                    @endif
+                @endforeach
+
+                {{-- Mobile language switcher --}}
+                @if(count($enabledLocales) > 1)
+                    <div class="border-t border-slate-100 pt-3 mt-3">
+                        <p class="px-4 text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Language</p>
+                        <div class="flex flex-wrap gap-2 px-4">
+                            @foreach ($enabledLocales as $loc)
+                                @php
+                                    $switchPath = preg_replace('#^/?[a-z]{2}(/?|$)#', $loc . '/', ltrim(request()->path(), '/'));
+                                    $switchUrl  = url('/' . $switchPath);
+                                @endphp
+                                <a href="{{ $switchUrl }}"
+                                   class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition
+                                          {{ $loc === $locale ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]' : 'border border-slate-200 text-slate-600 hover:border-slate-300' }}">
+                                    <span>{{ $localeMeta[$loc]['flag'] ?? '🌐' }}</span>
+                                    <span>{{ $localeMeta[$loc]['label'] ?? strtoupper($loc) }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
 </nav>

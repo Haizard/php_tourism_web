@@ -1,16 +1,16 @@
 @php
-    $__bgType  = $sectionSettings->contact_bg_type  ?? 'color';
-    $__bgColor = $sectionSettings->contact_bg_color ?? '#ffffff';
-    $__bgImage = $sectionSettings->contact_bg_image ?? '';
-    $__style = '';
-    if ($__bgType === 'color') {
-        $__style = 'background-color: ' . $__bgColor . ';';
-    } elseif ($__bgType === 'image' && $__bgImage) {
-        $__style = 'background-image: url(' . asset('storage/' . $__bgImage) . '); background-size: cover; background-position: center; background-repeat: no-repeat;';
-    }
+    $bg = $sectionBackgrounds['contact'] ?? null;
+    $hasBg = $bg && $bg->bg_type !== 'none' && $bg->bg_value;
+    $bgStyle = $hasBg ? $bg->inline_style : '';
+    $overlayStyle = $hasBg ? $bg->overlay_style : '';
+    $sectionTextClass = $bg ? $bg->text_class : 'text-slate-950';
 @endphp
-<section class="px-6 py-12 lg:px-8" style="{{ $__style }}">
-    <div class="mx-auto max-w-7xl">
+
+<section class="px-6 py-12 lg:px-8 relative {{ $sectionTextClass }}" style="{{ $bgStyle }}">
+    @if ($overlayStyle)
+        <div class="absolute inset-0 pointer-events-none" style="{{ $overlayStyle }}"></div>
+    @endif
+    <div class="relative mx-auto max-w-7xl">
         <x-glass-card>
             <h2 class="text-3xl font-black text-slate-950">Get in Touch</h2>
             <p class="mt-4 text-slate-600">

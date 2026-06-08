@@ -1,20 +1,22 @@
 @php
-    $__bgType  = $sectionSettings->blogs_bg_type  ?? 'color';
-    $__bgColor = $sectionSettings->blogs_bg_color ?? '#f1f5f9';
-    $__bgImage = $sectionSettings->blogs_bg_image ?? '';
-    $__style = '';
-    if ($__bgType === 'color') {
-        $__style = 'background-color: ' . $__bgColor . ';';
-    } elseif ($__bgType === 'image' && $__bgImage) {
-        $__style = 'background-image: url(' . asset('storage/' . $__bgImage) . '); background-size: cover; background-position: center; background-repeat: no-repeat;';
-    }
+    $bg = $sectionBackgrounds['blogs'] ?? null;
+    $hasBg = $bg && $bg->bg_type !== 'none' && $bg->bg_value;
+    $bgStyle = $hasBg ? $bg->inline_style : '';
+    $overlayStyle = $hasBg ? $bg->overlay_style : '';
+    $sectionTextClass = $bg ? $bg->text_class : 'text-slate-950';
+    $headingClass = ($bg && $bg->text_color === 'light') ? 'text-white' : 'text-slate-950';
+    $mutedClass = ($bg && $bg->text_color === 'light') ? 'text-white/75' : 'text-slate-600';
 @endphp
-<section class="px-6 py-12 lg:px-8" style="{{ $__style }}">
-    <div class="mx-auto max-w-7xl">
+
+<section class="px-6 py-12 lg:px-8 relative {{ $sectionTextClass }}" style="{{ $bgStyle }}">
+    @if ($overlayStyle)
+        <div class="absolute inset-0 pointer-events-none" style="{{ $overlayStyle }}"></div>
+    @endif
+    <div class="relative mx-auto max-w-7xl">
         <div class="page-section-header">
             <span class="badge-pill bg-[var(--color-accent)]/10 text-[var(--color-accent)]">Journal</span>
-            <h2 class="mt-4 text-3xl font-black text-slate-950">Stories from the road</h2>
-            <p class="mt-3 max-w-2xl text-slate-600">Travel inspiration and local insights for people planning their next adventure.</p>
+            <h2 class="mt-4 text-3xl font-black {{ $headingClass }}">Stories from the road</h2>
+            <p class="mt-3 max-w-2xl {{ $mutedClass }}">Travel inspiration and local insights for people planning their next adventure.</p>
         </div>
 
         <div class="grid gap-6 md:grid-cols-3">
@@ -23,7 +25,7 @@
                 <div class="p-6">
                     <p class="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--color-accent)]">Travel insight</p>
                     <h3 class="mt-3 text-2xl font-black text-slate-950">Inside Ngorongoro</h3>
-                    <p class="mt-4 text-sm leading-6 text-slate-600">A deeper look at what makes this crater one of East Africa's most captivating safari destinations.</p>
+                    <p class="mt-4 text-sm leading-6 text-slate-600">A deeper look at what makes this crater one of East Africa’s most captivating safari destinations.</p>
                 </div>
             </article>
             <article class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white/90 shadow-lg shadow-slate-900/5">

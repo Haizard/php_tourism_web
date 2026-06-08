@@ -25,31 +25,52 @@ class TestimonialResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Author Information')
-                    ->description('Testimonial author details')
+                    ->description('Reviewer details')
                     ->schema([
                         Forms\Components\TextInput::make('author_name')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\TextInput::make('author_title')
+                            ->label('Author Title / Location')
                             ->maxLength(255),
                         Forms\Components\FileUpload::make('author_image')
                             ->image()
                             ->directory('testimonials'),
                     ]),
 
-                Forms\Components\Section::make('Testimonial Content')
-                    ->description('The testimonial message and rating')
+                Forms\Components\Section::make('Review Content')
+                    ->description('The review message and rating')
                     ->schema([
+                        Forms\Components\TextInput::make('review_title')
+                            ->label('Review Title')
+                            ->maxLength(150)
+                            ->placeholder('e.g. Amazing Safari Experience!'),
                         Forms\Components\Textarea::make('content')
                             ->required()
                             ->maxLength(2000),
-                        Forms\Components\TextInput::make('rating')
-                            ->numeric()
+                        Forms\Components\Select::make('rating')
+                            ->options([
+                                5 => '⭐⭐⭐⭐⭐ Excellent',
+                                4 => '⭐⭐⭐⭐ Very Good',
+                                3 => '⭐⭐⭐ Average',
+                                2 => '⭐⭐ Poor',
+                                1 => '⭐ Terrible',
+                            ])
                             ->required()
-                            ->minValue(1)
-                            ->maxValue(5)
-                            ->step(0.5)
-                            ->helperText('Rating from 1 to 5'),
+                            ->default(5),
+                        Forms\Components\Select::make('traveler_type')
+                            ->label('Type of Traveler')
+                            ->options([
+                                'solo'     => '🧳 Solo Traveler',
+                                'couple'   => '💑 Couple',
+                                'family'   => '👨‍👩‍👧 Family',
+                                'friends'  => '👫 Friends',
+                                'business' => '💼 Business',
+                            ])
+                            ->nullable(),
+                        Forms\Components\DatePicker::make('visit_date')
+                            ->label('Visit Date')
+                            ->nullable(),
                     ]),
 
                 Forms\Components\Section::make('Tour Association')
@@ -62,10 +83,12 @@ class TestimonialResource extends Resource
                     ]),
 
                 Forms\Components\Section::make('Publishing')
-                    ->description('Control testimonial visibility and order')
+                    ->description('Control review visibility and order')
                     ->schema([
                         Forms\Components\Toggle::make('is_published')
-                            ->default(true),
+                            ->label('Approve & Publish')
+                            ->helperText('Only published reviews appear on the tour page.')
+                            ->default(false),
                         Forms\Components\DatePicker::make('published_at'),
                         Forms\Components\TextInput::make('sort_order')
                             ->numeric()
@@ -81,24 +104,41 @@ class TestimonialResource extends Resource
                 Tables\Columns\TextColumn::make('author_name')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('review_title')
+                    ->label('Title')
+                    ->searchable()
+                    ->limit(30),
                 Tables\Columns\BadgeColumn::make('rating')
-                    ->formatStateUsing(fn($state) => "{$state} ⭐")
+                    ->formatStateUsing(fn($state) => str_repeat('⭐', $state))
                     ->sortable(),
+                Tables\Columns\TextColumn::make('traveler_type')
+                    ->label('Traveler')
+                    ->formatStateUsing(fn($state) => match ($state) {
+                        'solo'     => '🧳 Solo',
+                        'couple'   => '💑 Couple',
+                        'family'   => '👨‍👩‍👧 Family',
+                        'friends'  => '👫 Friends',
+                        'business' => '💼 Business',
+                        default    => '—',
+                    }),
                 Tables\Columns\BooleanColumn::make('is_published')
+                    ->label('Approved')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tour.title')
                     ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('sort_order')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->limit(25),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Submitted')
+                    ->dateTime()
+                    ->sortable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_published'),
+                Tables\Filters\TernaryFilter::make('is_published')
+                    ->label('Approval Status')
+                    ->trueLabel('Approved')
+                    ->falseLabel('Pending'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -114,17 +154,15 @@ class TestimonialResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTestimonial::route('/'),
+            'index'  => Pages\ListTestimonial::route('/'),
             'create' => Pages\CreateTestimonial::route('/create'),
-            'edit' => Pages\EditTestimonial::route('/{record}/edit'),
+            'edit'   => Pages\EditTestimonial::route('/{record}/edit'),
         ];
     }
 }

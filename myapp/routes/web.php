@@ -2,39 +2,30 @@
 
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookingController;
-use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ContactController;
-use App\Http\Controllers\CustomPageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TourController;
 use App\Settings\LanguageSettings;
 use Illuminate\Support\Facades\Route;
 
+$languageSettings = app(LanguageSettings::class);
 $supportedLocales = array_keys(config('tourism.supported_locales', []));
-try {
-    $languageSettings = app(LanguageSettings::class);
-    $enabledLocales = array_values(array_filter(
-        $languageSettings->enabledLocales ?: $supportedLocales,
-        fn ($locale) => in_array($locale, $supportedLocales, true)
-    ));
-    $defaultLocale = in_array($languageSettings->defaultLocale, $enabledLocales, true)
-        ? $languageSettings->defaultLocale
-        : ($enabledLocales[0] ?? 'en');
-} catch (\Exception $e) {
-    $enabledLocales = $supportedLocales;
-    $defaultLocale = $supportedLocales[0] ?? 'en';
-}
+$enabledLocales = array_values(array_filter(
+    $languageSettings->enabledLocales ?: $supportedLocales,
+    fn ($locale) => in_array($locale, $supportedLocales, true)
+));
 
 if (empty($enabledLocales)) {
     $enabledLocales = $supportedLocales;
 }
 
+$defaultLocale = in_array($languageSettings->defaultLocale, $enabledLocales, true)
+    ? $languageSettings->defaultLocale
+    : ($enabledLocales[0] ?? 'en');
+
 Route::get('/', function () use ($defaultLocale) {
     return redirect('/'.$defaultLocale);
 });
-
-// Chatbot — locale-independent endpoint
-Route::post('/chatbot', [ChatbotController::class, 'chat'])->name('chatbot.chat');
 
 Route::prefix('{locale}')
     ->whereIn('locale', $enabledLocales)
@@ -54,11 +45,6 @@ Route::prefix('{locale}')
         Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
         Route::view('/privacy', 'pages.privacy')->name('privacy');
         Route::view('/terms', 'pages.terms')->name('terms');
-
-        // Custom pages — must be LAST to avoid catching named routes above
-        Route::get('/{slug}', [CustomPageController::class, 'show'])
-            ->name('custom-page.show')
-            ->where('slug', '[a-z0-9\-]+');
     });
 
 Route::get('/dashboard', function () {

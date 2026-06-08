@@ -1,20 +1,22 @@
 @php
-    $__bgType  = $sectionSettings->testimonials_bg_type  ?? 'color';
-    $__bgColor = $sectionSettings->testimonials_bg_color ?? '#f8fafc';
-    $__bgImage = $sectionSettings->testimonials_bg_image ?? '';
-    $__style = '';
-    if ($__bgType === 'color') {
-        $__style = 'background-color: ' . $__bgColor . ';';
-    } elseif ($__bgType === 'image' && $__bgImage) {
-        $__style = 'background-image: url(' . asset('storage/' . $__bgImage) . '); background-size: cover; background-position: center; background-repeat: no-repeat;';
-    }
+    $bg = $sectionBackgrounds['testimonials'] ?? null;
+    $hasBg = $bg && $bg->bg_type !== 'none' && $bg->bg_value;
+    $bgStyle = $hasBg ? $bg->inline_style : '';
+    $overlayStyle = $hasBg ? $bg->overlay_style : '';
+    $sectionTextClass = $bg ? $bg->text_class : 'text-slate-950';
+    $headingClass = ($bg && $bg->text_color === 'light') ? 'text-white' : 'text-slate-950';
+    $mutedClass = ($bg && $bg->text_color === 'light') ? 'text-white/75' : 'text-slate-600';
 @endphp
-<section class="px-6 py-12 lg:px-8" style="{{ $__style }}">
-    <div class="mx-auto max-w-7xl">
+
+<section class="px-6 py-16 lg:px-8 relative {{ $sectionTextClass }}" style="{{ $bgStyle }}">
+    @if ($overlayStyle)
+        <div class="absolute inset-0 pointer-events-none" style="{{ $overlayStyle }}"></div>
+    @endif
+    <div class="relative mx-auto max-w-7xl">
         <div class="page-section-header">
             <span class="badge-pill bg-[var(--color-accent)]/10 text-[var(--color-accent)]">Guest stories</span>
-            <h2 class="mt-4 text-3xl font-black text-slate-950">What travelers appreciate most</h2>
-            <p class="mt-3 max-w-2xl text-slate-600">Real guest experiences that highlight personalized service, local guides, and unforgettable safari moments.</p>
+            <h2 class="mt-4 text-3xl font-black {{ $headingClass }}">What travelers appreciate most</h2>
+            <p class="mt-3 max-w-2xl {{ $mutedClass }}">Real guest experiences that highlight personalized service, local guides, and unforgettable safari moments.</p>
         </div>
 
         <div class="grid gap-6 md:grid-cols-3">
