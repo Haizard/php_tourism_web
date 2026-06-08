@@ -31,6 +31,7 @@
                                 $tabs[] = [
                                     'icon' => '📅',
                                     'label' => 'Itinerary',
+                                    'bgColor' => 'var(--color-primary)',
                                     'content' => $itineraryContent,
                                 ];
                             }
@@ -50,7 +51,8 @@
                                 $includedContent = view('components.accordion', ['items' => $includedItems])->render();
                                 $tabs[] = [
                                     'icon' => '✅',
-                                    'label' => 'What\'s Included',
+                                    'label' => 'Included',
+                                    'bgColor' => 'var(--color-accent)',
                                     'content' => $includedContent,
                                 ];
                             }
@@ -70,7 +72,8 @@
                                 $excludedContent = view('components.accordion', ['items' => $excludedItems])->render();
                                 $tabs[] = [
                                     'icon' => '⚠️',
-                                    'label' => 'Not Included',
+                                    'label' => 'Excluded',
+                                    'bgColor' => '#f59e0b',
                                     'content' => $excludedContent,
                                 ];
                             }
@@ -89,6 +92,7 @@
                         $tabs[] = [
                             'icon' => '📖',
                             'label' => 'Overview',
+                            'bgColor' => '#6366f1',
                             'content' => $overviewContent,
                         ];
                     @endphp

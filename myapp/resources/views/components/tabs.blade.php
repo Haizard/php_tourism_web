@@ -2,23 +2,21 @@
 
 <div x-data="{ activeTab: 0 }" class="space-y-6">
     <!-- Tab Headers -->
-    <div class="flex flex-wrap gap-2 border-b-2 border-slate-200 overflow-x-auto">
+    <div class="flex flex-wrap gap-3 border-b-2 border-slate-200">
         @foreach($tabs as $index => $tab)
             <button
                 @click="activeTab = {{ $index }}"
                 :class="{
-                    'border-b-4 border-[var(--color-primary)] text-[var(--color-primary)] font-bold': activeTab === {{ $index }},
-                    'border-b-4 border-transparent text-slate-600 hover:text-slate-900': activeTab !== {{ $index }}
+                    'opacity-100 shadow-md': activeTab === {{ $index }},
+                    'opacity-70 hover:opacity-85': activeTab !== {{ $index }}
                 }"
-                class="px-6 py-4 text-lg font-semibold transition-all duration-300 relative group"
+                class="px-5 py-3 rounded-lg font-semibold text-white transition-all duration-300 flex items-center gap-2 whitespace-nowrap"
+                style="background-color: {{ $tab['bgColor'] ?? 'var(--color-primary)' }}"
             >
-                <span class="flex items-center gap-2">
-                    @if($tab['icon'] ?? false)
-                        <span class="text-2xl">{!! $tab['icon'] !!}</span>
-                    @endif
-                    {{ $tab['label'] }}
-                </span>
-                <span :class="{ 'w-full': activeTab === {{ $index }}, 'w-0': activeTab !== {{ $index }} }" class="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] rounded-full transition-all duration-300"></span>
+                @if($tab['icon'] ?? false)
+                    <span class="text-lg">{!! $tab['icon'] !!}</span>
+                @endif
+                <span class="text-sm font-bold">{{ $tab['label'] }}</span>
             </button>
         @endforeach
     </div>
