@@ -3,7 +3,10 @@
 <div class="space-y-3">
     @foreach($items as $index => $item)
         <details class="group rounded-lg border border-slate-200 bg-white/50 hover:bg-white/70 transition-colors">
-            <summary class="cursor-pointer select-none px-6 py-4 flex items-center justify-between font-semibold text-slate-950 hover:text-[var(--color-primary)]">
+            <summary 
+                class="cursor-pointer select-none px-6 py-4 flex items-center justify-between font-semibold text-white hover:opacity-90 transition-opacity rounded-t-lg"
+                style="background-color: {{ $item['bgColor'] ?? 'var(--color-primary)' }}"
+            >
                 <span class="flex items-center gap-3">
                     @if($item['icon'] ?? false)
                         <span class="text-lg">{!! $item['icon'] !!}</span>

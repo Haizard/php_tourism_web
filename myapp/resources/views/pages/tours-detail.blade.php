@@ -12,74 +12,10 @@
             <div class="grid gap-12 lg:grid-cols-3">
                 <div class="lg:col-span-2">
                     @php
-                        // Prepare tab data
+                        // Prepare tab data - Reordered: Overview, Itinerary, Included, Excluded
                         $tabs = [];
                         
-                        // Itinerary tab
-                        if($tour->itinerary) {
-                            $accordionItems = [];
-                            foreach($tour->itinerary as $day => $activities) {
-                                $accordionItems[] = [
-                                    'title' => $day,
-                                    'icon' => '📅',
-                                    'content' => $activities,
-                                ];
-                            }
-                            
-                            if(count($accordionItems) > 0) {
-                                $itineraryContent = view('components.accordion', ['items' => $accordionItems])->render();
-                                $tabs[] = [
-                                    'icon' => '📅',
-                                    'label' => 'Itinerary',
-                                    'bgColor' => 'var(--color-primary)',
-                                    'content' => $itineraryContent,
-                                ];
-                            }
-                        }
-                        
-                        // Included Services tab
-                        if($tour->included_services) {
-                            $includedItems = [];
-                            foreach($tour->included_services as $service => $details) {
-                                $includedItems[] = [
-                                    'title' => $service,
-                                    'content' => $details,
-                                ];
-                            }
-                            
-                            if(count($includedItems) > 0) {
-                                $includedContent = view('components.accordion', ['items' => $includedItems])->render();
-                                $tabs[] = [
-                                    'icon' => '✅',
-                                    'label' => 'Included',
-                                    'bgColor' => 'var(--color-accent)',
-                                    'content' => $includedContent,
-                                ];
-                            }
-                        }
-                        
-                        // Excluded Services tab
-                        if($tour->excluded_services) {
-                            $excludedItems = [];
-                            foreach($tour->excluded_services as $service => $details) {
-                                $excludedItems[] = [
-                                    'title' => $service,
-                                    'content' => $details,
-                                ];
-                            }
-                            
-                            if(count($excludedItems) > 0) {
-                                $excludedContent = view('components.accordion', ['items' => $excludedItems])->render();
-                                $tabs[] = [
-                                    'icon' => '⚠️',
-                                    'label' => 'Excluded',
-                                    'bgColor' => '#f59e0b',
-                                    'content' => $excludedContent,
-                                ];
-                            }
-                        }
-                        
-                        // Tour Overview tab
+                        // Tour Overview tab (FIRST)
                         $overviewContent = '<div class="prose prose-lg prose-slate max-w-none
                             [&_h1]:text-2xl [&_h1]:font-black [&_h1]:text-slate-950 [&_h1]:mt-6 [&_h1]:mb-4
                             [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-slate-900 [&_h2]:mt-5 [&_h2]:mb-3
@@ -95,6 +31,73 @@
                             'bgColor' => '#6366f1',
                             'content' => $overviewContent,
                         ];
+                        
+                        // Itinerary tab (SECOND)
+                        if($tour->itinerary) {
+                            $accordionItems = [];
+                            foreach($tour->itinerary as $day => $activities) {
+                                $accordionItems[] = [
+                                    'title' => $day,
+                                    'icon' => '📅',
+                                    'bgColor' => '#3b82f6',
+                                    'content' => $activities,
+                                ];
+                            }
+                            
+                            if(count($accordionItems) > 0) {
+                                $itineraryContent = view('components.accordion', ['items' => $accordionItems])->render();
+                                $tabs[] = [
+                                    'icon' => '📅',
+                                    'label' => 'Itinerary',
+                                    'bgColor' => 'var(--color-primary)',
+                                    'content' => $itineraryContent,
+                                ];
+                            }
+                        }
+                        
+                        // Included Services tab (THIRD)
+                        if($tour->included_services) {
+                            $includedItems = [];
+                            foreach($tour->included_services as $service => $details) {
+                                $includedItems[] = [
+                                    'title' => $service,
+                                    'bgColor' => '#10b981',
+                                    'content' => $details,
+                                ];
+                            }
+                            
+                            if(count($includedItems) > 0) {
+                                $includedContent = view('components.accordion', ['items' => $includedItems])->render();
+                                $tabs[] = [
+                                    'icon' => '✅',
+                                    'label' => 'Included',
+                                    'bgColor' => 'var(--color-accent)',
+                                    'content' => $includedContent,
+                                ];
+                            }
+                        }
+                        
+                        // Excluded Services tab (FOURTH)
+                        if($tour->excluded_services) {
+                            $excludedItems = [];
+                            foreach($tour->excluded_services as $service => $details) {
+                                $excludedItems[] = [
+                                    'title' => $service,
+                                    'bgColor' => '#f59e0b',
+                                    'content' => $details,
+                                ];
+                            }
+                            
+                            if(count($excludedItems) > 0) {
+                                $excludedContent = view('components.accordion', ['items' => $excludedItems])->render();
+                                $tabs[] = [
+                                    'icon' => '⚠️',
+                                    'label' => 'Excluded',
+                                    'bgColor' => '#f59e0b',
+                                    'content' => $excludedContent,
+                                ];
+                            }
+                        }
                     @endphp
                     
                     <x-tabs :tabs="$tabs" />
