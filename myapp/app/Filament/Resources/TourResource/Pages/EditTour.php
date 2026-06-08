@@ -8,4 +8,9 @@ use Filament\Resources\Pages\EditRecord;
 class EditTour extends EditRecord
 {
     protected static string $resource = TourResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

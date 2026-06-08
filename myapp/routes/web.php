@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\AiContentController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TourController;
@@ -55,6 +57,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// AI Chatbot API route (accessible without locale prefix)
+Route::post('/chatbot', [ChatbotController::class, 'chat']);
+
+// AI Content Generation API routes (for admin panel)
+Route::middleware(['auth'])->group(function () {
+    Route::post('/admin/api/generate-tour-content', [AiContentController::class, 'generateTourContent']);
+    Route::post('/admin/api/generate-tour-seo', [AiContentController::class, 'generateTourSeo']);
+    Route::post('/admin/api/generate-blog-content', [AiContentController::class, 'generateBlogContent']);
+    Route::post('/admin/api/generate-blog-seo', [AiContentController::class, 'generateBlogSeo']);
+    Route::get('/admin/api/ai-available', [AiContentController::class, 'checkAvailability']);
 });
 
 require __DIR__.'/auth.php';

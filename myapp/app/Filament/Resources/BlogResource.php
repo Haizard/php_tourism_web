@@ -25,6 +25,7 @@ class BlogResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Basic Information')
+                    ->description('Enter blog details, then click "✨ Generate with AI" button to auto-fill content')
                     ->schema([
                         Forms\Components\TextInput::make('title')
                             ->required()
@@ -40,16 +41,75 @@ class BlogResource extends Resource
                             ->label('Category')
                             ->options(\App\Models\BlogCategory::where('is_active', true)->pluck('name', 'id'))
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->helperText('Select a category for better AI-generated content'),
                         Forms\Components\Textarea::make('excerpt')
                             ->rows(3)
                             ->columnSpanFull(),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Content')
+                    ->description('Use AI to generate all content fields at once')
+                    ->headerActions([
+                        Forms\Components\Actions\Action::make('generate_ai_content')
+                            ->label('✨ Generate All Content with AI')
+                            ->color('warning')
+                            ->icon('heroicon-o-sparkles')
+                            ->requiresConfirmation()
+                            ->modalHeading('Generate Blog Content with AI')
+                            ->modalDescription('AI will generate content based on the title and category you\'ve entered. This will auto-fill the excerpt, content, highlights, and SEO fields.')
+                            ->modalSubmitActionLabel('Generate')
+                            ->modalCancelActionLabel('Cancel')
+                            ->action(function (\Filament\Forms\Get $get, \Filament\Forms\Set $set) {
+                                $service = app(\App\Services\GeminiContentService::class);
+                                
+                                if (!$service->isAvailable()) {
+                                    throw new \Exception('Gemini API key is not configured. Please add GEMINI_API_KEY to your .env file.');
+                                }
+
+                                // Get form data using $get
+                                $title = $get('title');
+                                if (empty($title)) {
+                                    throw new \Exception('Please enter a blog title before generating content.');
+                                }
+
+                                $categoryId = $get('category_id');
+                                
+                                $categoryName = null;
+                                if ($categoryId) {
+                                    $category = \App\Models\BlogCategory::find($categoryId);
+                                    $categoryName = $category->name ?? null;
+                                }
+
+                                $generatedContent = $service->generateCompleteBlog(
+                                    $title,
+                                    $categoryName
+                                );
+
+                                // Update form state with generated content
+                                $set('excerpt', $generatedContent['excerpt'] ?? $get('excerpt'));
+                                $set('content', $generatedContent['content'] ?? $get('content'));
+                                $set('highlights', $generatedContent['highlights'] ?? $get('highlights'));
+                                $set('seo_meta_title', $generatedContent['seo_meta_title'] ?? $get('seo_meta_title'));
+                                $set('seo_meta_description', $generatedContent['seo_meta_description'] ?? $get('seo_meta_description'));
+                                $set('seo_keywords', $generatedContent['seo_keywords'] ?? $get('seo_keywords'));
+
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Content generated successfully!')
+                                    ->body('Review and edit the AI-generated content before publishing.')
+                                    ->success()
+                                    ->send();
+                            }),
+                    ])
                     ->schema([
                         Forms\Components\RichEditor::make('content')
                             ->required()
+                            ->helperText('Click "Generate All Content with AI" to auto-fill this field')
+                            ->columnSpanFull(),
+                        Forms\Components\KeyValue::make('highlights')
+                            ->label('Key Highlights')
+                            ->keyLabel('Highlight')
+                            ->valueLabel('Description')
                             ->columnSpanFull(),
                     ]),
 
