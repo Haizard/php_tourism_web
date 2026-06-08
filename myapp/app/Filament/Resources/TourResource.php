@@ -56,32 +56,6 @@ class TourResource extends Resource
                             ->columnSpanFull(),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Tour Highlights')
-                    ->description('Add icon+text badges displayed prominently below the tour header (e.g. 🦁 Wildlife, ☀ 7 Days, ✈ Airport Transfer)')
-                    ->schema([
-                        Forms\Components\Repeater::make('highlights')
-                            ->label('')
-                            ->schema([
-                                Forms\Components\TextInput::make('icon')
-                                    ->label('Icon / Emoji')
-                                    ->placeholder('e.g. 🦁 or ✈')
-                                    ->maxLength(10)
-                                    ->columnSpan(1),
-                                Forms\Components\TextInput::make('label')
-                                    ->label('Label')
-                                    ->placeholder('e.g. Wildlife, 7 Days, Airport Transfer')
-                                    ->required()
-                                    ->maxLength(60)
-                                    ->columnSpan(3),
-                            ])
-                            ->columns(4)
-                            ->defaultItems(0)
-                            ->addActionLabel('Add Highlight')
-                            ->reorderable()
-                            ->collapsible()
-                            ->columnSpanFull(),
-                    ]),
-
                 Forms\Components\Section::make('Pricing')
                     ->schema([
                         Forms\Components\TextInput::make('price')

@@ -3,12 +3,13 @@
     $hasBg = $bg && $bg->bg_type !== 'none' && $bg->bg_value;
     $bgStyle = $hasBg ? $bg->inline_style : '';
     $overlayStyle = $hasBg ? $bg->overlay_style : '';
+    $sectionTextClass = $bg ? $bg->text_class : 'text-slate-950';
     $headingClass = ($bg && $bg->text_color === 'light') ? 'text-white' : 'text-slate-950';
     $mutedClass   = ($bg && $bg->text_color === 'light') ? 'text-white/75' : 'text-slate-600';
     $locale = $currentLocale ?? app()->getLocale();
 @endphp
 
-<section class="px-6 py-16 lg:px-8 relative" style="{{ $bgStyle }}">
+<section class="px-6 py-16 lg:px-8 relative {{ $sectionTextClass }}" style="{{ $bgStyle }}">
     @if ($overlayStyle)
         <div class="absolute inset-0 pointer-events-none" style="{{ $overlayStyle }}"></div>
     @endif

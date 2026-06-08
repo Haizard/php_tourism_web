@@ -121,6 +121,11 @@ class CustomPageResource extends Resource
                         Forms\Components\Select::make('content.bg_type')->label('Background')->options(['none' => 'None', 'color' => 'Color', 'image' => 'Image'])->live()->default('none'),
                         Forms\Components\ColorPicker::make('content.bg_color')->label('BG Color')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'color'),
                         Forms\Components\FileUpload::make('content.bg_image')->label('BG Image')->image()->disk('public')->directory('page-builder')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'image'),
+                        Forms\Components\Select::make('content.text_color')
+                            ->label('Text Color')
+                            ->options(['dark' => 'Dark', 'light' => 'Light'])
+                            ->default('dark')
+                            ->visible(fn (Forms\Get $get) => $get('content.bg_type') !== 'none'),
                         Forms\Components\TextInput::make('content.overlay_opacity')->label('Overlay Opacity')->placeholder('0.6')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'image'),
                         Forms\Components\TextInput::make('content.primary_btn_text')->label('Primary Button Text'),
                         Forms\Components\TextInput::make('content.primary_btn_url')->label('Primary Button URL'),
@@ -138,6 +143,11 @@ class CustomPageResource extends Resource
                         Forms\Components\Select::make('content.alignment')->label('Alignment')->options(['left' => 'Left', 'center' => 'Center', 'right' => 'Right'])->default('left'),
                         Forms\Components\Select::make('content.bg_type')->label('Background')->options(['none' => 'None', 'color' => 'Color', 'image' => 'Image'])->live()->default('none'),
                         Forms\Components\ColorPicker::make('content.bg_color')->label('BG Color')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'color'),
+                        Forms\Components\Select::make('content.text_color')
+                            ->label('Text Color')
+                            ->options(['dark' => 'Dark', 'light' => 'Light'])
+                            ->default('dark')
+                            ->visible(fn (Forms\Get $get) => $get('content.bg_type') !== 'none'),
                         Forms\Components\FileUpload::make('content.bg_image')->label('BG Image')->image()->disk('public')->directory('page-builder')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'image'),
                     ]),
                     Forms\Components\RichEditor::make('content.body')->label('Content')->columnSpanFull(),
@@ -153,6 +163,11 @@ class CustomPageResource extends Resource
                         Forms\Components\FileUpload::make('content.image')->label('Image')->image()->disk('public')->directory('page-builder'),
                         Forms\Components\Select::make('content.bg_type')->label('Background')->options(['none' => 'None', 'color' => 'Color'])->live()->default('none'),
                         Forms\Components\ColorPicker::make('content.bg_color')->label('BG Color')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'color'),
+                        Forms\Components\Select::make('content.text_color')
+                            ->label('Text Color')
+                            ->options(['dark' => 'Dark', 'light' => 'Light'])
+                            ->default('dark')
+                            ->visible(fn (Forms\Get $get) => $get('content.bg_type') !== 'none'),
                         Forms\Components\TextInput::make('content.btn_text')->label('Button Text'),
                         Forms\Components\TextInput::make('content.btn_url')->label('Button URL'),
                     ]),
@@ -170,6 +185,11 @@ class CustomPageResource extends Resource
                         Forms\Components\Select::make('content.bg_type')->label('Background')->options(['none' => 'None', 'color' => 'Color', 'image' => 'Image'])->live()->default('none'),
                         Forms\Components\ColorPicker::make('content.bg_color')->label('BG Color')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'color'),
                         Forms\Components\FileUpload::make('content.bg_image')->label('BG Image')->image()->disk('public')->directory('page-builder')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'image'),
+                        Forms\Components\Select::make('content.text_color')
+                            ->label('Text Color')
+                            ->options(['dark' => 'Dark', 'light' => 'Light'])
+                            ->default('dark')
+                            ->visible(fn (Forms\Get $get) => $get('content.bg_type') !== 'none'),
                         Forms\Components\Select::make('content.card_style')->label('Card Style')->options(['default' => 'Default', 'bordered' => 'Bordered', 'shadow' => 'Shadow', 'glass' => 'Glass'])->default('default'),
                     ]),
                     Forms\Components\Repeater::make('content.cards')
@@ -200,6 +220,11 @@ class CustomPageResource extends Resource
                         Forms\Components\TextInput::make('content.subtitle')->label('Subtitle'),
                         Forms\Components\Select::make('content.bg_type')->label('Background')->options(['none' => 'None', 'color' => 'Color', 'image' => 'Image'])->live()->default('none'),
                         Forms\Components\ColorPicker::make('content.bg_color')->label('BG Color')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'color'),
+                        Forms\Components\Select::make('content.text_color')
+                            ->label('Text Color')
+                            ->options(['dark' => 'Dark', 'light' => 'Light'])
+                            ->default('dark')
+                            ->visible(fn (Forms\Get $get) => $get('content.bg_type') !== 'none'),
                         Forms\Components\FileUpload::make('content.bg_image')->label('BG Image')->image()->disk('public')->directory('page-builder')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'image'),
                     ]),
                     Forms\Components\Repeater::make('content.items')
@@ -229,6 +254,11 @@ class CustomPageResource extends Resource
                         Forms\Components\TextInput::make('content.secondary_btn_url')->label('Secondary Button URL'),
                         Forms\Components\Select::make('content.bg_type')->label('Background')->options(['none' => 'None', 'color' => 'Color', 'image' => 'Image'])->live()->default('color'),
                         Forms\Components\ColorPicker::make('content.bg_color')->label('BG Color')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'color'),
+                        Forms\Components\Select::make('content.text_color')
+                            ->label('Text Color')
+                            ->options(['dark' => 'Dark', 'light' => 'Light'])
+                            ->default('dark')
+                            ->visible(fn (Forms\Get $get) => $get('content.bg_type') !== 'none'),
                         Forms\Components\FileUpload::make('content.bg_image')->label('BG Image')->image()->disk('public')->directory('page-builder')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'image'),
                     ]),
                 ]),
@@ -243,6 +273,11 @@ class CustomPageResource extends Resource
                         Forms\Components\Select::make('content.columns')->label('Columns')->options(['2' => '2', '3' => '3', '4' => '4'])->default('3'),
                         Forms\Components\Select::make('content.bg_type')->label('Background')->options(['none' => 'None', 'color' => 'Color'])->live()->default('none'),
                         Forms\Components\ColorPicker::make('content.bg_color')->label('BG Color')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'color'),
+                        Forms\Components\Select::make('content.text_color')
+                            ->label('Text Color')
+                            ->options(['dark' => 'Dark', 'light' => 'Light'])
+                            ->default('dark')
+                            ->visible(fn (Forms\Get $get) => $get('content.bg_type') !== 'none'),
                     ]),
                     Forms\Components\Repeater::make('content.images')
                         ->label('Images')
@@ -264,6 +299,11 @@ class CustomPageResource extends Resource
                     Forms\Components\Grid::make(2)->schema([
                         Forms\Components\Select::make('content.bg_type')->label('Background')->options(['none' => 'None', 'color' => 'Color'])->live()->default('none'),
                         Forms\Components\ColorPicker::make('content.bg_color')->label('BG Color')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'color'),
+                        Forms\Components\Select::make('content.text_color')
+                            ->label('Text Color')
+                            ->options(['dark' => 'Dark', 'light' => 'Light'])
+                            ->default('dark')
+                            ->visible(fn (Forms\Get $get) => $get('content.bg_type') !== 'none'),
                     ]),
                     Forms\Components\Textarea::make('content.html_content')
                         ->label('HTML Content')
@@ -283,6 +323,11 @@ class CustomPageResource extends Resource
                         Forms\Components\Select::make('content.limit')->label('Number of Tours')->options(['3' => '3', '6' => '6', '9' => '9', '12' => '12'])->default('6'),
                         Forms\Components\Select::make('content.bg_type')->label('Background')->options(['none' => 'None', 'color' => 'Color'])->live()->default('none'),
                         Forms\Components\ColorPicker::make('content.bg_color')->label('BG Color')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'color'),
+                        Forms\Components\Select::make('content.text_color')
+                            ->label('Text Color')
+                            ->options(['dark' => 'Dark', 'light' => 'Light'])
+                            ->default('dark')
+                            ->visible(fn (Forms\Get $get) => $get('content.bg_type') !== 'none'),
                         Forms\Components\Select::make('content.card_style')->label('Card Style')->options(['default' => 'Default', 'bordered' => 'Bordered', 'minimal' => 'Minimal'])->default('default'),
                     ]),
                 ]),
@@ -297,6 +342,11 @@ class CustomPageResource extends Resource
                         Forms\Components\Select::make('content.limit')->label('Number of Posts')->options(['3' => '3', '6' => '6', '9' => '9'])->default('6'),
                         Forms\Components\Select::make('content.bg_type')->label('Background')->options(['none' => 'None', 'color' => 'Color'])->live()->default('none'),
                         Forms\Components\ColorPicker::make('content.bg_color')->label('BG Color')->visible(fn (Forms\Get $get) => $get('content.bg_type') === 'color'),
+                        Forms\Components\Select::make('content.text_color')
+                            ->label('Text Color')
+                            ->options(['dark' => 'Dark', 'light' => 'Light'])
+                            ->default('dark')
+                            ->visible(fn (Forms\Get $get) => $get('content.bg_type') !== 'none'),
                     ]),
                 ]),
 
@@ -305,7 +355,7 @@ class CustomPageResource extends Resource
                 Forms\Components\Textarea::make('custom_css')
                     ->label('Custom CSS for this section')
                     ->rows(5)
-                    ->helperText('Use .pb-section-{id} to scope styles to this section only. Applied inside a <style> tag.')
+                    ->helperText('Use #pb-section-{id} to scope styles to this section only. Applied inside a <style> tag.')
                     ->extraAttributes(['style' => 'font-family: monospace; font-size: 0.85rem;']),
             ]),
         ];

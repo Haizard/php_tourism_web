@@ -56,4 +56,14 @@ class SectionBackground extends Model
 
         return '';
     }
+
+    public function getTextClassAttribute(): string
+    {
+        return $this->text_color === 'light' ? 'text-white' : 'text-slate-950';
+    }
+
+    public function getMutedTextClassAttribute(): string
+    {
+        return $this->text_color === 'light' ? 'text-white/75' : 'text-slate-600';
+    }
 }

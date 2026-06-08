@@ -4,30 +4,24 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\TourController;
 use App\Settings\LanguageSettings;
 use Illuminate\Support\Facades\Route;
 
+$languageSettings = app(LanguageSettings::class);
 $supportedLocales = array_keys(config('tourism.supported_locales', []));
-
-try {
-    $languageSettings = app(LanguageSettings::class);
-    $enabledLocales = array_values(array_filter(
-        $languageSettings->enabledLocales ?: $supportedLocales,
-        fn ($locale) => in_array($locale, $supportedLocales, true)
-    ));
-    $defaultLocale = in_array($languageSettings->defaultLocale, $enabledLocales, true)
-        ? $languageSettings->defaultLocale
-        : ($enabledLocales[0] ?? 'en');
-} catch (\Throwable $e) {
-    $enabledLocales = $supportedLocales;
-    $defaultLocale = $enabledLocales[0] ?? 'en';
-}
+$enabledLocales = array_values(array_filter(
+    $languageSettings->enabledLocales ?: $supportedLocales,
+    fn ($locale) => in_array($locale, $supportedLocales, true)
+));
 
 if (empty($enabledLocales)) {
     $enabledLocales = $supportedLocales;
 }
+
+$defaultLocale = in_array($languageSettings->defaultLocale, $enabledLocales, true)
+    ? $languageSettings->defaultLocale
+    : ($enabledLocales[0] ?? 'en');
 
 Route::get('/', function () use ($defaultLocale) {
     return redirect('/'.$defaultLocale);
@@ -39,12 +33,10 @@ Route::prefix('{locale}')
     ->group(function (): void {
         Route::view('/', 'pages.home')->name('home');
         Route::view('/about', 'pages.about')->name('about');
-        Route::get('/tours', [TourController::class, 'index'])->name('tours.index');
+        Route::view('/tours', 'pages.tours')->name('tours.index');
         Route::get('/tours/{slug}', [TourController::class, 'show'])->name('tours.show');
         Route::post('/tours/{tour}/book', [BookingController::class, 'store'])->where('tour', '\d+')->name('booking.store');
-        Route::post('/tours/{tour}/review', [ReviewController::class, 'store'])->where('tour', '\d+')->name('review.store');
         Route::view('/destinations', 'pages.destinations')->name('destinations.index');
-        Route::get('/destinations/{slug}', [\App\Http\Controllers\DestinationController::class, 'show'])->name('destinations.show');
         Route::view('/blog', 'pages.blog')->name('blog.index');
         Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
         Route::view('/gallery', 'pages.gallery')->name('gallery');

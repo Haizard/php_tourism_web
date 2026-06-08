@@ -3,6 +3,7 @@
     $hasBg = $bg && $bg->bg_type !== 'none' && $bg->bg_value;
     $bgStyle = $hasBg ? $bg->inline_style : '';
     $overlayStyle = $hasBg ? $bg->overlay_style : '';
+    $sectionTextClass = $bg ? $bg->text_class : 'text-slate-950';
     $locale = $currentLocale ?? app()->getLocale();
 
     try {
@@ -24,7 +25,7 @@
     }
 @endphp
 
-<section class="page-hero {{ $hasBg ? '' : 'page-hero--hero1' }} relative overflow-hidden" style="{{ $bgStyle }}">
+<section class="page-hero {{ $hasBg ? '' : 'page-hero--hero1' }} relative overflow-hidden {{ $sectionTextClass }}" style="{{ $bgStyle }}">
     @if (!$hasBg)
         <div class="page-hero__image absolute inset-0"></div>
     @endif

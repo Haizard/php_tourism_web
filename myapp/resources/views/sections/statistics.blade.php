@@ -3,9 +3,10 @@
     $hasBg = $bg && $bg->bg_type !== 'none' && $bg->bg_value;
     $bgStyle = $hasBg ? $bg->inline_style : '';
     $overlayStyle = $hasBg ? $bg->overlay_style : '';
+    $sectionTextClass = $bg ? $bg->text_class : 'text-slate-950';
 @endphp
 
-<section class="px-6 py-12 lg:px-8 relative" style="{{ $bgStyle }}">
+<section class="px-6 py-12 lg:px-8 relative {{ $sectionTextClass }}" style="{{ $bgStyle }}">
     @if ($overlayStyle)
         <div class="absolute inset-0 pointer-events-none" style="{{ $overlayStyle }}"></div>
     @endif
