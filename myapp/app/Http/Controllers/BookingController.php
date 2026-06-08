@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Mail;
 
 class BookingController extends Controller
 {
-    public function store(Request $request, $tour)
+    public function store(Request $request, string $tour)
     {
         $tour = Tour::findOrFail($tour);
         

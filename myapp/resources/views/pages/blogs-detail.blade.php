@@ -2,6 +2,7 @@
 
     @if(!empty($blogTemplate?->custom_css))
     <style>
+        :root { --blog-custom: 1; }
         {!! $blogTemplate->custom_css !!}
     </style>
     @endif
@@ -42,7 +43,12 @@
         </div>
     @elseif($headerStyle === 'overlay')
         <div class="relative overflow-hidden min-h-[320px] flex items-end">
-            <div class="absolute inset-0" style="background-image: url({{ $blog->featured_image ? asset('storage/'.$blog->featured_image) : asset('images/creation-africa/safari.jpg') }}); background-size:cover; background-position:center;"></div>
+            @php
+                $bgImageUrl = $blog->featured_image 
+                    ? asset('storage/'.$blog->featured_image) 
+                    : asset('images/creation-africa/safari.jpg');
+            @endphp
+            <div class="absolute inset-0" style="background-image: url('{{ $bgImageUrl }}'); background-size:cover; background-position:center;"></div>
             <div class="absolute inset-0 bg-slate-950/70"></div>
             <div class="relative mx-auto max-w-4xl w-full px-6 pb-12">
                 <p class="text-sm font-semibold uppercase tracking-wider text-[var(--color-primary)] mb-2">Blog Post</p>
