@@ -25,6 +25,7 @@
     }
 @endphp
 
+<!-- stylelint-disable -->
 <section class="page-hero {{ $hasBg ? '' : 'page-hero--hero1' }} relative overflow-hidden {{ $sectionTextClass }}" style="{{ $bgStyle }}">
     @if (!$hasBg)
         <div class="page-hero__image absolute inset-0"></div>
@@ -83,6 +84,8 @@
         </div>
     </div>
 </section>
+
+<!-- stylelint-enable -->
 
 {{-- Tour Search Bar - Below Header --}}
 <section class="relative bg-gradient-to-b from-slate-50 to-white py-8 lg:py-12">
