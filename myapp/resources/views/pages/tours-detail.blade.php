@@ -12,55 +12,63 @@
             <div class="grid gap-12 lg:grid-cols-3">
                 <div class="lg:col-span-2">
                     <x-glass-card class="space-y-12">
-                        @if($tour->itinerary)
+                        @php
+                            $accordionItems = [];
+                            
+                            // Add itinerary items
+                            if($tour->itinerary) {
+                                foreach($tour->itinerary as $day => $activities) {
+                                    $accordionItems[] = [
+                                        'title' => $day,
+                                        'icon' => '📅',
+                                        'content' => $activities,
+                                    ];
+                                }
+                            }
+                        @endphp
+                        
+                        @if($tour->itinerary && count($accordionItems) > 0)
                             <div>
-                                <h2 class="text-2xl font-bold text-slate-950 mb-4">Itinerary</h2>
-                                <div class="space-y-4">
-                                    @foreach($tour->itinerary as $day => $activities)
-                                        <div class="rounded-lg border border-slate-200 p-4 bg-white/50">
-                                            <h3 class="font-semibold text-slate-950">{{ $day }}</h3>
-                                            <p class="text-slate-600 mt-2">{{ $activities }}</p>
-                                        </div>
-                                    @endforeach
-                                </div>
+                                <h2 class="text-2xl font-bold text-slate-950 mb-6">📅 Itinerary</h2>
+                                <x-accordion :items="$accordionItems" />
                             </div>
                         @endif
 
-                        @if($tour->included_services)
+                        @php
+                            $includedItems = [];
+                            if($tour->included_services) {
+                                foreach($tour->included_services as $service => $details) {
+                                    $includedItems[] = [
+                                        'title' => $service,
+                                        'content' => $details,
+                                    ];
+                                }
+                            }
+                        @endphp
+
+                        @if($tour->included_services && count($includedItems) > 0)
                             <div>
-                                <h2 class="text-2xl font-bold text-slate-950 mb-4">Included Services</h2>
-                                <ul class="space-y-2">
-                                    @foreach($tour->included_services as $service => $details)
-                                        <li class="flex items-start gap-3">
-                                            <svg class="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                            </svg>
-                                            <div>
-                                                <p class="font-semibold text-slate-950">{{ $service }}</p>
-                                                <p class="text-slate-600 text-sm">{{ $details }}</p>
-                                            </div>
-                                        </li>
-                                    @endforeach
-                                </ul>
+                                <h2 class="text-2xl font-bold text-slate-950 mb-6">✅ Included Services</h2>
+                                <x-accordion :items="$includedItems" />
                             </div>
                         @endif
 
-                        @if($tour->excluded_services)
+                        @php
+                            $excludedItems = [];
+                            if($tour->excluded_services) {
+                                foreach($tour->excluded_services as $service => $details) {
+                                    $excludedItems[] = [
+                                        'title' => $service,
+                                        'content' => $details,
+                                    ];
+                                }
+                            }
+                        @endphp
+
+                        @if($tour->excluded_services && count($excludedItems) > 0)
                             <div>
-                                <h2 class="text-2xl font-bold text-slate-950 mb-4">Excluded Services</h2>
-                                <ul class="space-y-2">
-                                    @foreach($tour->excluded_services as $service => $details)
-                                        <li class="flex items-start gap-3">
-                                            <svg class="h-5 w-5 text-slate-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                            </svg>
-                                            <div>
-                                                <p class="font-semibold text-slate-950">{{ $service }}</p>
-                                                <p class="text-slate-600 text-sm">{{ $details }}</p>
-                                            </div>
-                                        </li>
-                                    @endforeach
-                                </ul>
+                                <h2 class="text-2xl font-bold text-slate-950 mb-6">❌ Excluded Services</h2>
+                                <x-accordion :items="$excludedItems" />
                             </div>
                         @endif
 
